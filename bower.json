@@ -13,7 +13,7 @@
     "angular-mocks": "^1.2"
   },
   "ignore": [
-    ".jshintrc",
+    ".eslintrc",
     "test",
     "src",
     "karma*.js",

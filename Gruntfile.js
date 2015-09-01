@@ -62,7 +62,7 @@ module.exports = function (grunt) {
 	grunt.loadNpmTasks('grunt-karma');
 
 	grunt.registerTask('build', ['clean:dist', 'copy:dist', 'uglify:dist']);
-	grunt.registerTask('test-suite', ['jshint', 'karma:all']);
-	grunt.registerTask('test', ['jshint', 'karma:phantomjs']);
+	grunt.registerTask('test-suite', ['eslint', 'karma:all']);
+	grunt.registerTask('test', ['eslint', 'karma:phantomjs']);
 	grunt.registerTask('release', ['test-suite', 'build', 'bump']);
 };
