@@ -1,7 +1,10 @@
+'use strict';
+
 angular.module('picardy.graphs.common', [])
   .factory('common', function () {
 
     return {
+
       readOptions: function (scope, element, attrs) {
 
         function _getValue (attrValue, defaultValue) {
@@ -17,6 +20,7 @@ angular.module('picardy.graphs.common', [])
       },
 
       initSvg: function (el, width, height) {
+
         return d3.select(el)
           .append('svg')
           .attr('width', width)

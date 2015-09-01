@@ -1,3 +1,5 @@
+'use strict';
+
 angular.module('picardy.graphs.line', ['picardy.graphs.common'])
   .directive('d3GraphLine', ['common', function (common) {
 
@@ -11,41 +13,28 @@ angular.module('picardy.graphs.line', ['picardy.graphs.common'])
       },
       link: function (scope, element, attrs) {
 
-        var options = common.readOptions(scope, element, attrs),
-            parseDate,
-            dataset,
-            margin,
-            x,
-            y,
-            xAxis,
-            yAxis,
-            line,
-            path,
-            totalLength;
-
-        var svg = common.initSvg(element[0], options.width, options.height)
-
-        parseDate = d3.time.format('%d-%b-%y').parse;
+        var options = common.readOptions(scope, element, attrs);
+        var svg = common.initSvg(element[0], options.width, options.height);
+        var parseDate = d3.time.format('%d-%b-%y').parse;
+        var dataset, margin, width, height, x, y, xAxis, yAxis, line, path, totalLength;
 
         dataset = [
-          { date: '13-Oct-13', count: 10 },
-          { date: '17-Oct-13', count: 13 },
-          { date: '18-Oct-13', count: 18 },
-          { date: '18-Oct-13', count: 35 },
-          { date: '21-Oct-13', count: 10 },
-          { date: '26-Oct-13', count: 13 },
-          { date: '27-Oct-13', count: 18 }
+          {date: '13-Oct-13', count: 10},
+          {date: '17-Oct-13', count: 13},
+          {date: '18-Oct-13', count: 18},
+          {date: '18-Oct-13', count: 35},
+          {date: '21-Oct-13', count: 10},
+          {date: '26-Oct-13', count: 13},
+          {date: '27-Oct-13', count: 18}
         ];
 
         margin = {top: 20, right: 20, bottom: 30, left: 50};
-        var width = options.width - margin.left - margin.right;
-        var height = options.height - margin.top - margin.bottom;
 
-        x = d3.time.scale().
-          range([0, width - 20]);
+        width = options.width - margin.left - margin.right;
+        height = options.height - margin.top - margin.bottom;
 
-        y = d3.scale.linear().
-          range([height, 20]);
+        x = d3.time.scale().range([0, width - 20]);
+        y = d3.scale.linear().range([height, 20]);
 
         xAxis = d3.svg.axis().
           scale(x).
@@ -61,9 +50,11 @@ angular.module('picardy.graphs.line', ['picardy.graphs.common'])
         line = d3.svg.line().
           interpolate('linear').
           x(function (d) {
-            return x(d.date); }).
+            return x(d.date);
+          }).
           y(function (d) {
-            return y(d.count); });
+            return y(d.count);
+          });
 
         dataset.forEach(function (d) {
           d.date = parseDate(d.date);
@@ -71,9 +62,11 @@ angular.module('picardy.graphs.line', ['picardy.graphs.common'])
         });
 
         x.domain(d3.extent(dataset, function (d) {
-          return d.date; }));
+          return d.date;
+        }));
         y.domain([0, d3.max(dataset, function (d) {
-          return d.count; })]);
+          return d.count;
+        })]);
 
         svg.
           attr('width', width + margin.left + margin.right).
@@ -114,15 +107,15 @@ angular.module('picardy.graphs.line', ['picardy.graphs.common'])
             ease('cubic').
             attr('stroke-dashoffset', 0);
 
-        svg.selectAll('.axis path, .axis line')
-          .style('fill', 'none')
-          .style('stroke', '#000000')
-          .style('shape-rendering', 'crispEdges');
+        svg.selectAll('.axis path, .axis line').
+          style('fill', 'none').
+          style('stroke', '#000000').
+          style('shape-rendering', 'crispEdges');
 
-        svg.selectAll('.line')
-          .style('fill', 'none')
-          .style('stroke', 'red')
-          .style('stroke-width', '1.5px');
+        svg.selectAll('.line').
+          style('fill', 'none').
+          style('stroke', 'red').
+          style('stroke-width', '1.5px');
 
       }
     };

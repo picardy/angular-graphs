@@ -1,6 +1,6 @@
-(function () {
+'use strict';
 
-  'use strict';
+(function () {
 
   describe('angular-graphs', function () {
 

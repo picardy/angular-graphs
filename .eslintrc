@@ -1,11 +1,15 @@
 {
   "env": {
-    "jasmine": false,
+    "jasmine": true,
     "node": true,
     "mocha": true,
     "browser": false,
-    "es6": true,
+    "es6": false,
     "builtin": true
+  },
+  "globals": {
+    "angular": true,
+    "d3": true
   },
   "rules": {
     "array-bracket-spacing": [2, "never"],
