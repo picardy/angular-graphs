@@ -13,7 +13,7 @@ angular.module('picardy.graphs.pie', ['picardy.graphs.common'])
 
         var options = common.readOptions(scope, element, attrs);
         var svg = common.initSvg(element[0], options.width, options.height);
-        var colors = d3.scale.ordinal().range(['#A60F2B', '#648C85', '#B3F2C9', '#528C18', '#C3F25C']);
+        var colors = d3.scale.category10();
 
         options.pieWidth = attrs.pieWidth;
         options.pieHeight = attrs.pieHeight;
@@ -63,7 +63,7 @@ angular.module('picardy.graphs.pie', ['picardy.graphs.common'])
           slice.enter()
             .insert('path')
             .style('fill', function (d, i) {
-              return i === 0 ? colors.empty : colors.fill;
+              return i === 0 ? colors(0) : colors(1);
             })
             .attr('class', 'slice');
 
@@ -92,6 +92,12 @@ angular.module('picardy.graphs.pie', ['picardy.graphs.common'])
 
           polyline.enter()
             .append('polyline')
+            .style({
+              'opacity': '0.3',
+              'stroke': 'black',
+              'stroke-width': '2px',
+              'fill': 'none'
+            })
             .attr('points', function (d) {
               var pos = outerArc.centroid(d);
               pos[0] = radius * 0.95 * (midAngle(d) < Math.PI ? 1 : -1);

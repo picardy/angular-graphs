@@ -9,7 +9,7 @@ angular.module('picardy.graphs.common', [])
         }
 
         return {
-          width: _getValue(attrs.width, 300),
+          width: _getValue(attrs.width, 600),
           height: _getValue(attrs.height, 300),
           delay: _getValue(attrs.delay, 500),
           duration: _getValue(attrs.duration, 1000)
