@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en-us">
+<html lang="en-us" ng-app="picardyGraphsDemo">
   <head>
     <meta charset="UTF-8">
     <title>Angular-graphs by picardy</title>
@@ -9,7 +9,7 @@
     <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
     <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
   </head>
-  <body>
+  <body ng-controller="MainCtrl">
     <section class="page-header">
       <h1 class="project-name">Angular-graphs</h1>
       <h2 class="project-tagline"></h2>
@@ -27,8 +27,9 @@
 
       <p>A directive for creating different types of graphs implemented in <a href="http://d3js.org/">D3</a>.</p>
 
-      <h3>
-      <a id="license" class="anchor" href="#license" aria-hidden="true"><span class="octicon octicon-link"></span></a>License</h3>
+      <d3-graph></d3-graph>
+
+      <h3><a id="license" class="anchor" href="#license" aria-hidden="true"><span class="octicon octicon-link"></span></a>License</h3>
 
       <p>MIT Licensed by <a href="http://beta.picardylearning.com">Picardy</a>.</p>
 
@@ -40,6 +41,17 @@
 
     </section>
 
+    <script src="bower_components/angular/angular.min.js"></script>
+    <script src="bower_components/d3/d3.min.js"></script>
+    <script src="src/angular-graphs.js"></script>
+    <script>
+      angular.module('picardyGraphsDemo', [
+        'picardy.graphs'
+      ])
+      .controller('MainCtrl', [function() {
+        // noop
+      }]);
+    </script>
 
   </body>
 </html>

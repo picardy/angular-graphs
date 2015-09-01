@@ -7,7 +7,7 @@
 }(this, function (angular) {
 
   angular.module('picardy.graphs', [])
-    .directive('d3-graph', function () {
+    .directive('d3Graph', function () {
       return {
         restrict: 'E',
         replace: true,
@@ -16,6 +16,5 @@
         }
       };
     });
-
 
 }));
