@@ -12,8 +12,6 @@ angular.module('picardy.graphs.common', [])
         }
 
         return {
-          width: _getValue(attrs.width, 600),
-          height: _getValue(attrs.height, 300),
           delay: _getValue(attrs.delay, 500),
           duration: _getValue(attrs.duration, 1000)
         };
@@ -23,8 +21,7 @@ angular.module('picardy.graphs.common', [])
 
         return d3.select(el)
           .append('svg')
-          .attr('width', width)
-          .attr('height', height);
+          .attr('viewBox', [0, 0, width, height].join(' '));
       }
     };
   });

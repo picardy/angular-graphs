@@ -27,8 +27,9 @@
 
       <p>A directive for creating different types of graphs implemented in <a href="http://d3js.org/">D3</a>.</p>
 
-      <d3-graph-pie data="pieData" height="600" width="600" pie-width="300" pie-height="300" radius="100" labels="true"></d3-graph-pie>
-      <d3-graph-line data="lineData" height="300" width="900"></d3-graph-line>
+      <d3-graph-pie data="pieData"></d3-graph-pie>
+      <d3-graph-pie data="pieData" labels="true"></d3-graph-pie>
+      <!-- <d3-graph-line data="lineData" height="300" width="900"></d3-graph-line> -->
 
       <h3><a id="license" class="anchor" href="#license" aria-hidden="true"><span class="octicon octicon-link"></span></a>License</h3>
 
@@ -58,7 +59,7 @@
           labels: ['Incomplete', 'Complete'],
           colors: ['#FFBB33', '#892FAC'],
           start: [100, 0],
-          end: [20, 80]
+          end: [50, 50]
         };
 
       }]);
