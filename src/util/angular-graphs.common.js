@@ -8,7 +8,7 @@ angular.module('picardy.graphs.common', [])
       readOptions: function (scope, element, attrs) {
 
         function _getValue (attrValue, defaultValue) {
-          return attrValue === undefined ? attrValue : defaultValue;
+          return attrValue === undefined ? defaultValue : attrValue;
         }
 
         return {
