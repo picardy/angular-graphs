@@ -137,6 +137,10 @@ angular.module('picardy.graphs.pie', ['picardy.graphs.common'])
       },
       link: function (scope, element, attrs) {
 
+        if (!scope.data) {
+          return;
+        }
+
         var options = common.readOptions(scope, element, attrs);
         var svg = common.initSvg(element[0], options.width, options.height);
         var colors = d3.scale.category10();
@@ -290,7 +294,7 @@ angular.module('picardy.graphs.common', [])
       readOptions: function (scope, element, attrs) {
 
         function _getValue (attrValue, defaultValue) {
-          return attrValue === undefined ? attrValue : defaultValue;
+          return attrValue === undefined ? defaultValue : attrValue;
         }
 
         return {
