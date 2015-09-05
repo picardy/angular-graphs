@@ -135,7 +135,7 @@ angular.module('picardy.graphs.pie', ['picardy.graphs.common'])
         width: '@',
         radius: '@'
       },
-      link: function (scope, element, attrs) {
+      link: function (scope, element) {
 
         var _data, d3Data, options, svg, slices, labels, lines, text, min, radius, pie, innerArc, outerArc, percentage;
 
@@ -145,7 +145,16 @@ angular.module('picardy.graphs.pie', ['picardy.graphs.common'])
 
         _data = angular.copy(scope.data);
         d3Data = {start: [], end: []};
-        options = common.readOptions(scope, element, attrs);
+
+        options = {
+          labels: scope.labels === true,
+          width: scope.labels ? 500 : 300,
+          height: 300,
+          delay: scope.delay === undefined ? 500 : scope.delay,
+          duration: scope.duration === undefined ? 1000 : scope.duration
+        };
+
+        // options = common.readOptions(scope, element, attrs);
         svg = common.initSvg(element[0], options.width, options.height);
         if (!_data.colors) {
           _data.colors = d3.scale.category10().range();
@@ -172,8 +181,8 @@ angular.module('picardy.graphs.pie', ['picardy.graphs.common'])
           return d.data.label;
         }
 
-        options.pieWidth = attrs.pieWidth;
-        options.pieHeight = attrs.pieHeight;
+        options.pieWidth = 300;
+        options.pieHeight = 300;
 
         slices = svg.append('g').attr('class', 'slices');
         labels = svg.append('g').attr('class', 'labels');
@@ -288,11 +297,9 @@ angular.module('picardy.graphs.pie', ['picardy.graphs.common'])
         drawChart(d3Data.start);
 
         setTimeout(function () {
-          d3Data.end[0].value = 20;
-          d3Data.end[1].value = 80;
           drawChart(d3Data.end, options.duration);
 
-          if (scope.labels) {
+          if (options.labels) {
             setTimeout(function () {
               drawLines(d3Data.end);
               drawLabels(d3Data.end);
@@ -319,8 +326,6 @@ angular.module('picardy.graphs.common', [])
         }
 
         return {
-          width: _getValue(attrs.width, 600),
-          height: _getValue(attrs.height, 300),
           delay: _getValue(attrs.delay, 500),
           duration: _getValue(attrs.duration, 1000)
         };
@@ -330,8 +335,7 @@ angular.module('picardy.graphs.common', [])
 
         return d3.select(el)
           .append('svg')
-          .attr('width', width)
-          .attr('height', height);
+          .attr('viewBox', [0, 0, width, height].join(' '));
       }
     };
   });
