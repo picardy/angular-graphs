@@ -18,6 +18,24 @@ angular.module('picardy.graphs.pie', ['picardy.graphs.common'])
           return;
         }
 
+        var data = { start: [], end: [] };
+        angular.forEach(scope.data.start, function (val, i) {
+          var label = scope.data.labels[i],
+              color = scope.data.colors[i];
+
+          data.start.push({
+            value: scope.data.start[i],
+            label: label,
+            color: color
+          });
+
+          data.end.push({
+            value: scope.data.end[i],
+            label: label,
+            color: color
+          });
+        });
+
         var options = common.readOptions(scope, element, attrs);
         var svg = common.initSvg(element[0], options.width, options.height);
         var colors = d3.scale.category10();
@@ -74,8 +92,8 @@ angular.module('picardy.graphs.pie', ['picardy.graphs.common'])
 
           slice.enter().
             insert('path').
-            style('fill', function (d, i) {
-              return i === 0 ? colors(0) : colors(1);
+            style('fill', function (d) {
+              return d.data.color;
             }).
             attr('class', 'slice');
 
@@ -141,17 +159,17 @@ angular.module('picardy.graphs.pie', ['picardy.graphs.common'])
             });
         }
 
-        drawChart(scope.data.start);
+        drawChart(data.start);
 
         setTimeout(function () {
-          scope.data.end[0].value = 20;
-          scope.data.end[1].value = 80;
-          drawChart(scope.data.end, options.duration);
+          data.end[0].value = 20;
+          data.end[1].value = 80;
+          drawChart(data.end, options.duration);
 
           if (scope.labels) {
             setTimeout(function () {
-              drawLines(scope.data.end);
-              drawLabels(scope.data.end);
+              drawLines(data.end);
+              drawLabels(data.end);
             }, options.duration);
           }
         }, options.delay);

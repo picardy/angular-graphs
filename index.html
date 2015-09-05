@@ -55,14 +55,10 @@
       .controller('MainCtrl', ['$scope', function($scope) {
 
         $scope.pieData = {
-          start: [
-            {label: 'Incomplete', value: 100},
-            {label: 'Complete', value: 0}
-          ],
-          end: [
-            {label: 'Incomplete', value: 20},
-            {label: 'Complete', value: 80}
-          ]
+          labels: ['Incomplete', 'Complete'],
+          colors: ['#FFBB33', '#892FAC'],
+          start: [100, 0],
+          end: [20, 80]
         };
 
       }]);
