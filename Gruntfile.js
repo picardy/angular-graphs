@@ -17,9 +17,9 @@ module.exports = function (grunt) {
 				gitDescribeOptions: '--tags --always --abbrev=1 --dirty=-d'
 			}
 		},
-		copy: {
+		concat: {
 			dist: {
-				src: 'src/angular-graphs.js',
+				src: 'src/**/*.js',
 				dest: 'dist/angular-graphs.js'
 			}
 		},
@@ -56,12 +56,13 @@ module.exports = function (grunt) {
 
 	grunt.loadNpmTasks('grunt-bump');
 	grunt.loadNpmTasks('grunt-contrib-clean');
+	grunt.loadNpmTasks('grunt-contrib-concat');
 	grunt.loadNpmTasks('grunt-contrib-copy');
 	grunt.loadNpmTasks('grunt-contrib-uglify');
 	grunt.loadNpmTasks('grunt-eslint');
 	grunt.loadNpmTasks('grunt-karma');
 
-	grunt.registerTask('build', ['clean:dist', 'copy:dist', 'uglify:dist']);
+	grunt.registerTask('build', ['clean:dist', 'concat:dist', 'uglify:dist']);
 	grunt.registerTask('test-suite', ['eslint', 'karma:all']);
 	grunt.registerTask('test', ['eslint', 'karma:phantomjs']);
 	grunt.registerTask('release', ['test-suite', 'build', 'bump']);
