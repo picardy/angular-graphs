@@ -137,14 +137,36 @@ angular.module('picardy.graphs.pie', ['picardy.graphs.common'])
       },
       link: function (scope, element, attrs) {
 
+        var _data, d3Data, options, svg, slices, labels, lines, text, min, radius, pie, innerArc, outerArc, percentage;
+
         if (!scope.data) {
           return;
         }
 
-        var options = common.readOptions(scope, element, attrs);
-        var svg = common.initSvg(element[0], options.width, options.height);
-        var colors = d3.scale.category10();
-        var slices, labels, lines, text, min, radius, pie, innerArc, outerArc, percentage;
+        _data = angular.copy(scope.data);
+        d3Data = {start: [], end: []};
+        options = common.readOptions(scope, element, attrs);
+        svg = common.initSvg(element[0], options.width, options.height);
+        if (!_data.colors) {
+          _data.colors = d3.scale.category10().range();
+        }
+
+        angular.forEach(_data.start, function (val, i) {
+          var label = _data.labels[i],
+              color = _data.colors[i];
+
+          d3Data.start.push({
+            value: _data.start[i],
+            label: label,
+            color: color
+          });
+
+          d3Data.end.push({
+            value: _data.end[i],
+            label: label,
+            color: color
+          });
+        });
 
         function key (d) {
           return d.data.label;
@@ -197,8 +219,8 @@ angular.module('picardy.graphs.pie', ['picardy.graphs.common'])
 
           slice.enter().
             insert('path').
-            style('fill', function (d, i) {
-              return i === 0 ? colors(0) : colors(1);
+            style('fill', function (d) {
+              return d.data.color;
             }).
             attr('class', 'slice');
 
@@ -221,7 +243,6 @@ angular.module('picardy.graphs.pie', ['picardy.graphs.common'])
         }
 
         function drawLines (data) {
-
           var polyline = lines
             .selectAll('polyline')
             .data(pie(data), key);
@@ -264,17 +285,17 @@ angular.module('picardy.graphs.pie', ['picardy.graphs.common'])
             });
         }
 
-        drawChart(scope.data.start);
+        drawChart(d3Data.start);
 
         setTimeout(function () {
-          scope.data.end[0].value = 20;
-          scope.data.end[1].value = 80;
-          drawChart(scope.data.end, options.duration);
+          d3Data.end[0].value = 20;
+          d3Data.end[1].value = 80;
+          drawChart(d3Data.end, options.duration);
 
           if (scope.labels) {
             setTimeout(function () {
-              drawLines(scope.data.end);
-              drawLabels(scope.data.end);
+              drawLines(d3Data.end);
+              drawLabels(d3Data.end);
             }, options.duration);
           }
         }, options.delay);
