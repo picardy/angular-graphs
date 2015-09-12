@@ -12,25 +12,36 @@ angular.module('picardy.graphs.pie', ['picardy.graphs.common'])
       }
 
       _data = angular.copy(scope.data);
+
+      function getColor (type, i) {
+        if (_data.colors && _data.colors[type]) {
+          if (type === 'slices') {
+            if (_data.colors.slices) {
+              return _data.colors.slices[i];
+            } else {
+              return d3.scale.category10().range()[i];
+            }
+          }
+          return _data.colors[type];
+        }
+        return 'black';
+      }
+
       d3Data = {start: [], end: []};
 
       options = {
-        labels: scope.labels === true,
-        width: scope.labels ? 500 : 300,
-        height: 300,
-        delay: scope.delay === undefined ? 500 : scope.delay,
-        duration: scope.duration === undefined ? 1000 : scope.duration
+        labels: _data.labels && _data.labels.length,
+        height: _data.width === undefined ? 300 : _data.width,
+        delay: _data.delay === undefined ? 500 : _data.delay,
+        duration: _data.duration === undefined ? 1000 : _data.duration
       };
+      options.width = _data.width === undefined ? options.height + (options.labels ? 200 : 0) : _data.width;
 
-      // options = common.readOptions(scope, element, attrs);
       svg = common.initSvg(element[0], options.width, options.height);
-      if (!_data.colors) {
-        _data.colors = d3.scale.category10().range();
-      }
 
       angular.forEach(_data.start, function (val, i) {
-        var label = _data.labels ? _data.labels[i] : Math.random(),
-            color = _data.colors[i];
+        var label = options.labels ? _data.labels[i] : Math.random(),
+            color = getColor('slices', i);
 
         d3Data.start.push({
           value: _data.start[i],
@@ -83,7 +94,10 @@ angular.module('picardy.graphs.pie', ['picardy.graphs.common'])
       percentage = text.append('text').
         attr('text-anchor', 'middle').
         attr('alignment-baseline', 'central').
-        attr('style', 'font-size: ' + options.pieWidth / 6 + 'px');
+        attr({
+          'style': 'font-size: ' + options.pieWidth / 6 + 'px',
+          'fill': getColor('amount')
+        });
 
       function drawChart (data, duration) {
         var slice = slices.
@@ -128,7 +142,7 @@ angular.module('picardy.graphs.pie', ['picardy.graphs.common'])
           append('polyline').
           style({
             'opacity': '0.3',
-            'stroke': 'black',
+            'stroke': getColor('lines'),
             'stroke-width': '2px',
             'fill': 'none'
           }).
@@ -149,6 +163,7 @@ angular.module('picardy.graphs.pie', ['picardy.graphs.common'])
         labelsD.enter().
           append('text').
           attr('dy', '.35em').
+          style('fill', getColor('labels')).
           text(function (d) {
             return d.data.label;
           }).
@@ -180,13 +195,8 @@ angular.module('picardy.graphs.pie', ['picardy.graphs.common'])
     return {
       restrict: 'E',
       scope: {
-        data: '=',
-        labels: '=',
-        height: '@',
-        width: '@',
-        radius: '@',
-        init: '&',
-        render: '='
+        render: '=',
+        data: '='
       },
       link: function (scope, element, attrs) {
         $rootScope[attrs.render] = function (data) {

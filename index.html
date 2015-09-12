@@ -23,7 +23,7 @@
 
     <div class="text_group" id="install">
       <div class="text_group__title">Install via Bower</div>
-      <pre class="text_group__text">bower install angular-graphs</pre>
+      <pre class="text_group__text">bower install angular-graphs --save</pre>
     </div>
 
     <div class="example" id="docs">
@@ -34,16 +34,23 @@
         </div>
         <div class="example__javascript">
           <div class="example__title text_group__title">Javascript</div>
-          <pre class="example__text text_group__text">
-$scope.drawPie({
-  colors: ['#F2CFDA', '#8A8FC0'],
-  start: [100, 0],
-  end: [20, 80]
-});</pre>
+          <pre class="example__text text_group__text">$scope.drawPie({&#10;  colors: {&#10;    slices: [&apos;#F2CFDA&apos;, &apos;#8A8FC0&apos;],&#10;    amount: &apos;#222&apos;&#10;  },&#10;  start: [100, 0],&#10;  end: [20, 80]&#10;});</pre>
         </div>
       </div>
       <div class="example__output">
-        <d3-graph-pie render="renderPie1"></d3-graph-pie>
+        <d3-graph-pie render="drawPie1"></d3-graph-pie>
+      </div>
+    </div>
+
+    <div class="example">
+      <div class="example__input">
+        <div class="example__javascript">
+          <div class="example__title text_group__title">Javascript</div>
+          <pre class="example__text text_group__text">$scope.drawPie({&#10;  labels: [&apos;Incomplete&apos;, &apos;Complete&apos;],&#10;  colors: {&#10;    slices: [&apos;#F2CFDA&apos;, &apos;#8A8FC0&apos;],&#10;    amount: &apos;#222&apos;,&#10;    lines: &apos;#666&apos;,&#10;    labels: &apos;#222&apos;&#10;  },&#10;  start: [100, 0],&#10;  end: [20, 80]&#10;});</pre>
+        </div>
+      </div>
+      <div class="example__output">
+        <d3-graph-pie render="drawPie2"></d3-graph-pie>
       </div>
     </div>
 
@@ -51,21 +58,15 @@ $scope.drawPie({
       <div class="example__input">
         <div class="example__html">
           <div class="example__title text_group__title">HTML</div>
-          <pre class="example__text text_group__text">&lt;d3-graph-pie render=&quot;renderPie2&quot; labels=&quot;true&quot;&gt;&lt;/d3-graph-pie&gt;</pre>
+          <pre class="example__text text_group__text">&lt;d3-graph-line render=&quot;drawLine&quot;&gt;&lt;/d3-graph-line&gt;</pre>
         </div>
         <div class="example__javascript">
           <div class="example__title text_group__title">Javascript</div>
-          <pre class="example__text text_group__text">
-$scope.drawPie({
-  labels: ['Incomplete', 'Complete'],
-  colors: ['#F2CFDA', '#8A8FC0'],
-  start: [100, 0],
-  end: [20, 80]
-});</pre>
+          <pre class="example__text text_group__text">$scope.drawLine({&#10;  colors: {&#10;    axes: &apos;#222&apos;,&#10;    labels: &apos;#666&apos;,&#10;    lines: &apos;#F2CFDA&apos;&#10;  },&#10;  x: [&apos;13-Oct-13&apos;, &apos;17-Oct-13&apos;, &apos;19-Oct-13&apos;, &apos;26-Oct-13&apos;],&#10;  y: [10, 30, 23, 42]&#10;});</pre>
         </div>
       </div>
       <div class="example__output">
-        <d3-graph-pie render="renderPie2" labels="true"></d3-graph-pie>
+        <d3-graph-line render="drawLine1"></d3-graph-line>
       </div>
     </div>
 
@@ -83,17 +84,35 @@ $scope.drawPie({
 
         setTimeout(function() {
 
-          $scope.renderPie1({
-            colors: ['#F2CFDA', '#8A8FC0'],
+          $scope.drawPie1({
+            colors: {
+              slices: ['#F2CFDA', '#8A8FC0'],
+              amount: '#222'
+            },
             start: [100, 0],
             end: [20, 80]
           });
 
-          $scope.renderPie2({
+          $scope.drawPie2({
             labels: ['Incomplete', 'Complete'],
-            colors: ['#F2CFDA', '#8A8FC0'],
+            colors: {
+              slices: ['#F2CFDA', '#8A8FC0'],
+              amount: '#222',
+              lines: '#666',
+              labels: '#222'
+            },
             start: [100, 0],
             end: [20, 80]
+          });
+
+          $scope.drawLine1({
+            colors: {
+              axes: '#222',
+              labels: '#666',
+              lines: '#F2CFDA'
+            },
+            x: ['13-Oct-13', '17-Oct-13', '19-Oct-13', '26-Oct-13'],
+            y: [10, 30, 23, 42]
           });
 
         }, 0);
