@@ -5,28 +5,14 @@ angular.module('picardy.graphs.pie', ['picardy.graphs.common'])
 
     function render (scope, element) {
 
-      var _data, d3Data, options, svg, slices, labels, lines, text, min, radius, pie, innerArc, outerArc, percentage;
+      var _data, d3Data, options, getColor, svg, slices, labels, lines, text, min, radius, pie, innerArc, outerArc, percentage;
 
       if (!scope.data) {
         return;
       }
 
       _data = angular.copy(scope.data);
-
-      function getColor (type, i) {
-        if (_data.colors && _data.colors[type]) {
-          if (type === 'slices') {
-            if (_data.colors.slices) {
-              return _data.colors.slices[i];
-            } else {
-              return d3.scale.category10().range()[i];
-            }
-          }
-          return _data.colors[type];
-        }
-        return 'black';
-      }
-
+      getColor = common.colors(_data.colors);
       d3Data = {start: [], end: []};
 
       options = {
@@ -192,18 +178,5 @@ angular.module('picardy.graphs.pie', ['picardy.graphs.common'])
 
     }
 
-    return {
-      restrict: 'E',
-      scope: {
-        render: '=',
-        data: '='
-      },
-      link: function (scope, element, attrs) {
-        $rootScope[attrs.render] = function (data) {
-          scope.data = data;
-          render(scope, element, attrs);
-        };
-      }
-    };
-
+    return common.define($rootScope, render);
 }]);

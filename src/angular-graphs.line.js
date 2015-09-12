@@ -5,21 +5,14 @@ angular.module('picardy.graphs.line', ['picardy.graphs.common'])
 
     function render (scope, element) {
 
-      var _data, d3Data, options, svg, parseDate, margin, width, height, x, y, labels, axes, lines;
+      var _data, d3Data, options, getColor, svg, parseDate, margin, width, height, x, y, labels, axes, lines;
 
       if (!scope.data) {
         return;
       }
 
       _data = angular.copy(scope.data);
-
-      function getColor (type) {
-        if (_data.colors && _data.colors[type]) {
-          return _data.colors[type];
-        }
-        return 'black';
-      }
-
+      getColor = common.colors(_data.colors);
       d3Data = [];
 
       options = {
@@ -153,21 +146,5 @@ angular.module('picardy.graphs.line', ['picardy.graphs.common'])
 
     }
 
-    return {
-      restrict: 'E',
-      scope: {
-        render: '=',
-        data: '=',
-        width: '@',
-        height: '@',
-        duration: '@',
-        delay: '@'
-      },
-      link: function (scope, element, attrs) {
-        $rootScope[attrs.render] = function (data) {
-          scope.data = data;
-          render(scope, element, attrs);
-        };
-      }
-    };
+    return common.define($rootScope, render);
   }]);

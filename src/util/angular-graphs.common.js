@@ -3,25 +3,49 @@
 angular.module('picardy.graphs.common', [])
   .factory('common', function () {
 
-    return {
+    var common = {
 
-      readOptions: function (scope, element, attrs) {
-
-        function _getValue (attrValue, defaultValue) {
-          return attrValue === undefined ? defaultValue : attrValue;
-        }
-
+      define: function ($rootScope, render) {
         return {
-          delay: _getValue(attrs.delay, 500),
-          duration: _getValue(attrs.duration, 1000)
+          restrict: 'E',
+          scope: {
+            render: '=',
+            data: '='
+          },
+          link: function (scope, element, attrs) {
+            $rootScope[attrs.render] = function (data) {
+              scope.data = data;
+              render(scope, element, attrs);
+            };
+          }
         };
       },
 
       initSvg: function (el, width, height) {
-
         return d3.select(el)
           .append('svg')
           .attr('viewBox', [0, 0, width, height].join(' '));
+      },
+
+      colors: function (colors) {
+        return function getColor (type, i) {
+          var color;
+          if (colors) {
+            color = colors[type];
+            if (color) {
+              if (i === undefined) {
+                return color;
+              } else if (color.length > i) {
+                return color[i];
+              } else {
+                return d3.scale.category10().range()[i];
+              }
+            }
+          }
+          return 'black';
+        };
       }
     };
+
+    return common;
   });
