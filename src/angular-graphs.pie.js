@@ -15,12 +15,12 @@ angular.module('picardy.graphs.pie', ['picardy.graphs.common'])
       getColor = common.colors(_data.colors);
       d3Data = {start: [], end: []};
 
-      options = {
-        labels: _data.labels && _data.labels.length,
-        height: _data.width === undefined ? 300 : _data.width,
-        delay: _data.delay === undefined ? 500 : _data.delay,
-        duration: _data.duration === undefined ? 1000 : _data.duration
-      };
+      options = common.defaults(_data, {
+        height: 300,
+        delay: 500,
+        duration: 1000
+      });
+      options.labels = _data.labels && _data.labels.length;
       options.width = _data.width === undefined ? options.height + (options.labels ? 200 : 0) : _data.width;
 
       svg = common.initSvg(element[0], options.width, options.height);
@@ -49,14 +49,14 @@ angular.module('picardy.graphs.pie', ['picardy.graphs.common'])
       options.pieWidth = 300;
       options.pieHeight = 300;
 
-      slices = svg.append('g').attr('class', 'slices');
-      labels = svg.append('g').attr('class', 'labels');
-      lines = svg.append('g').attr('class', 'lines');
-      text = svg.append('g').attr('class', 'text');
+      slices = common.newLayer(svg, 'slices');
+      lines = common.newLayer(svg, 'lines');
+      labels = common.newLayer(svg, 'labels');
+      text = common.newLayer(svg, 'text');
 
       svg.selectAll('g').
         attr('transform', function () {
-          return 'translate(' + options.width / 2 + ',' + options.height / 2 + ')';
+          return common.translate(options.width / 2, options.height / 2);
         });
 
       // set the thickness of the inner and outer radii
@@ -78,9 +78,9 @@ angular.module('picardy.graphs.pie', ['picardy.graphs.common'])
         outerRadius(radius * 0.9);
 
       percentage = text.append('text').
-        attr('text-anchor', 'middle').
-        attr('alignment-baseline', 'central').
         attr({
+          'text-anchor': 'middle',
+          'alignment-baseline': 'central',
           'style': 'font-size: ' + options.pieWidth / 6 + 'px',
           'fill': getColor('amount')
         });
@@ -148,18 +148,22 @@ angular.module('picardy.graphs.pie', ['picardy.graphs.common'])
 
         labelsD.enter().
           append('text').
-          attr('dy', '.35em').
-          style('fill', getColor('labels')).
           text(function (d) {
             return d.data.label;
           }).
-          attr('transform', function (d) {
-            var pos = outerArc.centroid(d);
-            pos[0] = radius * (midAngle(d) < Math.PI ? 1 : -1);
-            return 'translate(' + pos + ')';
+          attr({
+            'dy': '.35em',
+            'transform': function (d) {
+              var pos = outerArc.centroid(d);
+              pos[0] = radius * (midAngle(d) < Math.PI ? 1 : -1);
+              return common.translate(pos);
+            }
           }).
-          style('text-anchor', function (d) {
-            return midAngle(d) < Math.PI ? 'start' : 'end';
+          style({
+            'fill': getColor('labels'),
+            'text-anchor': function (d) {
+              return midAngle(d) < Math.PI ? 'start' : 'end';
+            }
           });
       }
 

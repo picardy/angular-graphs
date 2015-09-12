@@ -44,6 +44,24 @@ angular.module('picardy.graphs.common', [])
           }
           return 'black';
         };
+      },
+
+      newLayer: function (svg, name) {
+        return svg.append('g').attr('class', name);
+      },
+
+      defaults: function (obj, defaults) {
+        var key, newObj = {};
+        for (key in defaults) {
+          if (obj[key] === undefined && defaults.hasOwnProperty(key)) {
+            newObj[key] = defaults[key];
+          }
+        }
+        return newObj;
+      },
+
+      translate: function (x, y) {
+        return 'translate(' + x + (y === undefined ? '' : ',' + y) + ')';
       }
     };
 
