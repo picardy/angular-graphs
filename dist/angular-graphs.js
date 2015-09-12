@@ -152,7 +152,7 @@ angular.module('picardy.graphs.pie', ['picardy.graphs.common'])
       }
 
       angular.forEach(_data.start, function (val, i) {
-        var label = _data.labels[i],
+        var label = _data.labels ? _data.labels[i] : Math.random(),
             color = _data.colors[i];
 
         d3Data.start.push({
