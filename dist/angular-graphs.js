@@ -1,97 +1,127 @@
 'use strict';
 
 angular.module('picardy.graphs.line', ['picardy.graphs.common'])
-  .directive('d3GraphLine', ['common', function (common) {
+  .directive('d3GraphLine', ['common', '$rootScope', function (common, $rootScope) {
 
-    return {
-      restrict: 'E',
-      scope: {
-        type: '@',
-        height: '@',
-        width: '@',
-        radius: '@'
-      },
-      link: function (scope, element, attrs) {
+    function render (scope, element) {
 
-        var options = common.readOptions(scope, element, attrs);
-        var svg = common.initSvg(element[0], options.width, options.height);
-        var parseDate = d3.time.format('%d-%b-%y').parse;
-        var dataset, margin, width, height, x, y, xAxis, yAxis, line, path, totalLength;
+      var _data, d3Data, options, svg, parseDate, margin, width, height, x, y, labels, axes, lines;
 
-        dataset = [
-          {date: '13-Oct-13', count: 10},
-          {date: '17-Oct-13', count: 13},
-          {date: '18-Oct-13', count: 18},
-          {date: '18-Oct-13', count: 35},
-          {date: '21-Oct-13', count: 10},
-          {date: '26-Oct-13', count: 13},
-          {date: '27-Oct-13', count: 18}
-        ];
+      if (!scope.data) {
+        return;
+      }
 
-        margin = {top: 20, right: 20, bottom: 30, left: 50};
+      _data = angular.copy(scope.data);
 
-        width = options.width - margin.left - margin.right;
-        height = options.height - margin.top - margin.bottom;
+      function getColor (type) {
+        if (_data.colors && _data.colors[type]) {
+          return _data.colors[type];
+        }
+        return 'black';
+      }
 
-        x = d3.time.scale().range([0, width - 20]);
-        y = d3.scale.linear().range([height, 20]);
+      d3Data = [];
 
+      options = {
+        height: scope.height === undefined ? 300 : scope.height,
+        delay: scope.delay === undefined ? 500 : scope.delay,
+        duration: scope.duration === undefined ? 1000 : scope.duration
+      };
+      options.width = scope.width === undefined ? options.height * 2 : scope.width;
+
+      svg = common.initSvg(element[0], options.width, options.height);
+
+      labels = svg.append('g').attr('class', 'labels');
+      axes = svg.append('g').attr('class', 'axes');
+      lines = svg.append('g').attr('class', 'lines');
+
+      margin = {top: 20, right: 20, bottom: 30, left: 50};
+      width = options.width - margin.left - margin.right;
+      height = options.height - margin.top - margin.bottom;
+
+      parseDate = d3.time.format('%d-%b-%y').parse;
+
+      angular.forEach(_data.x, function (val, i) {
+        d3Data.push({
+          x: parseDate(val),
+          y: _data.y[i]
+        });
+      });
+
+      x = d3.time.scale().range([0, width - 20]);
+      y = d3.scale.linear().range([height, 20]);
+
+      x.domain(d3.extent(d3Data, function (d) {
+        return d.x;
+      }));
+      y.domain([0, d3.max(d3Data, function (d) {
+        return d.y;
+      })]);
+
+
+      function drawAxes () {
+        var xAxis, yAxis;
+
+        /* X AXIS */
         xAxis = d3.svg.axis().
           scale(x).
           ticks(d3.time.days, 3).
           tickFormat(d3.time.format('%a %d')).
-          tickSize(0).
           orient('bottom');
 
+        axes.
+          append('g').
+            attr('class', 'x axis').
+            attr('transform', 'translate(' + margin.left + ',' + height + ')').
+            call(xAxis).
+            selectAll('text').
+              style('fill', getColor('axes')).
+              attr('transform', 'translate(0,10)');
+
+        /* Y AXIS */
         yAxis = d3.svg.axis().
           scale(y).
           orient('left');
 
+        axes.
+          append('g').
+            attr('class', 'y axis').
+            attr('transform', 'translate(' + margin.left + ',0)').
+            call(yAxis).
+            selectAll('text').
+              style('fill', getColor('axes'));
+
+        axes.selectAll('.axis path, .axis line').
+          style('fill', 'none').
+          style('stroke', getColor('axes')).
+          style('shape-rendering', 'crispEdges');
+      }
+
+      function drawLabels () {
+        labels.
+          append('text').
+            attr('transform', 'rotate(-90) translate(0,' + (margin.left + 20) + ')').
+            style({
+              'text-anchor': 'end',
+              'fill': getColor('labels')
+            }).
+            text('Completion (%)');
+      }
+
+      function drawLines (delay, duration) {
+        var path, totalLength, line;
+
         line = d3.svg.line().
           interpolate('linear').
           x(function (d) {
-            return x(d.date);
+            return x(d.x);
           }).
           y(function (d) {
-            return y(d.count);
+            return y(d.y);
           });
 
-        dataset.forEach(function (d) {
-          d.date = parseDate(d.date);
-          d.count = +d.count;
-        });
-
-        x.domain(d3.extent(dataset, function (d) {
-          return d.date;
-        }));
-        y.domain([0, d3.max(dataset, function (d) {
-          return d.count;
-        })]);
-
-        svg.
-          attr('width', width + margin.left + margin.right).
-          attr('heigh', height + margin.top + margin.bottom).
-        append('g').
-          attr('transform', 'translate(' + margin.left + ', ' + margin.top + ')');
-
-        svg.append('g').
-          attr('class', 'x axis').
-          attr('transform', 'translate(' + margin.left + ',' + height + ')').
-          call(xAxis).
-        selectAll('text').
-          attr('transform', 'translate(0,10)');
-
-        svg.append('g').
-          attr('class', 'y axis').
-          attr('transform', 'translate(' + margin.left + ',0)').
-          call(yAxis).
-        append('text').
-          attr('transform', 'rotate(-90) translate(0, 20)').
-          style('text-anchor', 'end').
-          text('Price ($)');
-
-        path = svg.append('path').
-          datum(dataset).
+        path = lines.append('path').
+          datum(d3Data).
           attr('transform', 'translate(' + margin.left + ',0)').
           attr('class', 'line').
           attr('d', line);
@@ -102,21 +132,42 @@ angular.module('picardy.graphs.line', ['picardy.graphs.common'])
           attr('stroke-dasharray', totalLength + ' ' + totalLength).
           attr('stroke-dashoffset', totalLength).
           transition().
-            duration(1000).
-            delay(options.delay).
-            ease('cubic').
+            duration(duration).
+            delay(delay).
+            ease('linear').
             attr('stroke-dashoffset', 0);
 
-        svg.selectAll('.axis path, .axis line').
+        lines.selectAll('.line').
           style('fill', 'none').
-          style('stroke', '#000000').
-          style('shape-rendering', 'crispEdges');
-
-        svg.selectAll('.line').
-          style('fill', 'none').
-          style('stroke', 'red').
+          style('stroke', getColor('lines')).
           style('stroke-width', '1.5px');
+      }
 
+      svg.
+        attr('width', width + margin.left + margin.right).
+        attr('height', height + margin.top + margin.bottom);
+
+      drawAxes();
+      drawLabels();
+      drawLines(options.delay, options.duration);
+
+    }
+
+    return {
+      restrict: 'E',
+      scope: {
+        render: '=',
+        data: '=',
+        width: '@',
+        height: '@',
+        duration: '@',
+        delay: '@'
+      },
+      link: function (scope, element, attrs) {
+        $rootScope[attrs.render] = function (data) {
+          scope.data = data;
+          render(scope, element, attrs);
+        };
       }
     };
   }]);
@@ -135,25 +186,36 @@ angular.module('picardy.graphs.pie', ['picardy.graphs.common'])
       }
 
       _data = angular.copy(scope.data);
+
+      function getColor (type, i) {
+        if (_data.colors && _data.colors[type]) {
+          if (type === 'slices') {
+            if (_data.colors.slices) {
+              return _data.colors.slices[i];
+            } else {
+              return d3.scale.category10().range()[i];
+            }
+          }
+          return _data.colors[type];
+        }
+        return 'black';
+      }
+
       d3Data = {start: [], end: []};
 
       options = {
-        labels: scope.labels === true,
-        width: scope.labels ? 500 : 300,
-        height: 300,
-        delay: scope.delay === undefined ? 500 : scope.delay,
-        duration: scope.duration === undefined ? 1000 : scope.duration
+        labels: _data.labels && _data.labels.length,
+        height: _data.width === undefined ? 300 : _data.width,
+        delay: _data.delay === undefined ? 500 : _data.delay,
+        duration: _data.duration === undefined ? 1000 : _data.duration
       };
+      options.width = _data.width === undefined ? options.height + (options.labels ? 200 : 0) : _data.width;
 
-      // options = common.readOptions(scope, element, attrs);
       svg = common.initSvg(element[0], options.width, options.height);
-      if (!_data.colors) {
-        _data.colors = d3.scale.category10().range();
-      }
 
       angular.forEach(_data.start, function (val, i) {
-        var label = _data.labels[i],
-            color = _data.colors[i];
+        var label = options.labels ? _data.labels[i] : Math.random(),
+            color = getColor('slices', i);
 
         d3Data.start.push({
           value: _data.start[i],
@@ -206,7 +268,10 @@ angular.module('picardy.graphs.pie', ['picardy.graphs.common'])
       percentage = text.append('text').
         attr('text-anchor', 'middle').
         attr('alignment-baseline', 'central').
-        attr('style', 'font-size: ' + options.pieWidth / 6 + 'px');
+        attr({
+          'style': 'font-size: ' + options.pieWidth / 6 + 'px',
+          'fill': getColor('amount')
+        });
 
       function drawChart (data, duration) {
         var slice = slices.
@@ -251,7 +316,7 @@ angular.module('picardy.graphs.pie', ['picardy.graphs.common'])
           append('polyline').
           style({
             'opacity': '0.3',
-            'stroke': 'black',
+            'stroke': getColor('lines'),
             'stroke-width': '2px',
             'fill': 'none'
           }).
@@ -272,6 +337,7 @@ angular.module('picardy.graphs.pie', ['picardy.graphs.common'])
         labelsD.enter().
           append('text').
           attr('dy', '.35em').
+          style('fill', getColor('labels')).
           text(function (d) {
             return d.data.label;
           }).
@@ -303,13 +369,8 @@ angular.module('picardy.graphs.pie', ['picardy.graphs.common'])
     return {
       restrict: 'E',
       scope: {
-        data: '=',
-        labels: '=',
-        height: '@',
-        width: '@',
-        radius: '@',
-        init: '&',
-        render: '='
+        render: '=',
+        data: '='
       },
       link: function (scope, element, attrs) {
         $rootScope[attrs.render] = function (data) {

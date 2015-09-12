@@ -3,7 +3,7 @@
 angular.module('picardy.graphs.line', ['picardy.graphs.common'])
   .directive('d3GraphLine', ['common', '$rootScope', function (common, $rootScope) {
 
-    function render (scope, element, attrs) {
+    function render (scope, element) {
 
       var _data, d3Data, options, svg, parseDate, margin, width, height, x, y, labels, axes, lines;
 
