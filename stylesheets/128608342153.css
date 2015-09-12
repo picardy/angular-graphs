@@ -1,0 +1,83 @@
+body {
+  font-family: 'Josefin Sans', sans-serif;
+  background-color: #D8A1B4;
+  font-size: 20px;
+}
+
+.title {
+  margin: 40px 48px 0 48px;
+}
+
+.nav {
+  background-color: #8A8FC0;
+  border: 3px solid #222222;
+  border-left: 0;
+  border-right: 0;
+  margin-top: 35px;
+  padding-left: 43px;
+  border-radius: 1px;
+}
+
+.nav a {
+  text-decoration: none;
+  color: #000000;
+  font-weight: 600;
+  display: inline-block;
+  padding: 5px 5px 0px 5px;
+  margin-right: 5px;
+}
+
+.nav a:hover {
+  background: #222222;
+  color: snow;
+}
+
+
+/*
+  TEXT GROUP
+ */
+.text_group__title {
+  padding-left: 48px;
+  text-transform: lowercase;
+  margin-top: 40px;
+}
+.text_group__text {
+  margin: 5px 40px 0;
+  background-color: #F2CFDA;
+  padding: 5px;
+  font-size: 16px;
+  border: 3px solid #222222;
+  border-radius: 1px;
+  display: inline-block;
+}
+
+
+/*
+  EXAMPLE
+ */
+.example {
+  display: flex;
+  flex-direction: row;
+}
+.example__input {
+  flex-grow: 0;
+  flex-shrink: 1;
+  flex-basis: auto;
+}
+.example__output {
+  flex: auto;
+  text-align: center;
+  max-width: 400px;
+}
+/*.example__title {}*/
+/*.example__text {}*/
+
+
+@media (max-width: 768px) {
+  .example {
+    flex-direction: column;
+  }
+  .example__output svg {
+    max-width: 400px;
+  }
+}
