@@ -5,35 +5,28 @@ angular.module('picardy.graphs.line', ['picardy.graphs.common'])
 
     function render (scope, element) {
 
-      var _data, d3Data, options, svg, parseDate, margin, width, height, x, y, labels, axes, lines;
+      var _data, d3Data, options, getColor, svg, parseDate, margin, width, height, x, y, labels, axes, lines;
 
       if (!scope.data) {
         return;
       }
 
       _data = angular.copy(scope.data);
-
-      function getColor (type) {
-        if (_data.colors && _data.colors[type]) {
-          return _data.colors[type];
-        }
-        return 'black';
-      }
-
+      getColor = common.colors(_data.colors);
       d3Data = [];
 
-      options = {
-        height: scope.height === undefined ? 300 : scope.height,
-        delay: scope.delay === undefined ? 500 : scope.delay,
-        duration: scope.duration === undefined ? 1000 : scope.duration
-      };
+      options = common.defaults(_data, {
+        height: 300,
+        delay: 500,
+        duration: 1000
+      });
       options.width = scope.width === undefined ? options.height * 2 : scope.width;
 
       svg = common.initSvg(element[0], options.width, options.height);
 
-      labels = svg.append('g').attr('class', 'labels');
-      axes = svg.append('g').attr('class', 'axes');
-      lines = svg.append('g').attr('class', 'lines');
+      labels = common.newLayer(svg, 'labels');
+      lines = common.newLayer(svg, 'lines');
+      axes = common.newLayer(svg, 'axes');
 
       margin = {top: 20, right: 20, bottom: 30, left: 50};
       width = options.width - margin.left - margin.right;
@@ -71,12 +64,14 @@ angular.module('picardy.graphs.line', ['picardy.graphs.common'])
 
         axes.
           append('g').
-            attr('class', 'x axis').
-            attr('transform', 'translate(' + margin.left + ',' + height + ')').
+            attr({
+              'class': 'x axis',
+              'transform': common.translate(margin.left, height)
+            }).
             call(xAxis).
             selectAll('text').
               style('fill', getColor('axes')).
-              attr('transform', 'translate(0,10)');
+              attr('transform', common.translate(0, 10));
 
         /* Y AXIS */
         yAxis = d3.svg.axis().
@@ -85,22 +80,26 @@ angular.module('picardy.graphs.line', ['picardy.graphs.common'])
 
         axes.
           append('g').
-            attr('class', 'y axis').
-            attr('transform', 'translate(' + margin.left + ',0)').
+            attr({
+              'class': 'y axis',
+              'transform': common.translate(margin.left, 0)
+            }).
             call(yAxis).
             selectAll('text').
               style('fill', getColor('axes'));
 
         axes.selectAll('.axis path, .axis line').
-          style('fill', 'none').
-          style('stroke', getColor('axes')).
-          style('shape-rendering', 'crispEdges');
+          style({
+            'fill': 'none',
+            'stroke': getColor('axes'),
+            'shape-rendering': 'crispEdges'
+          });
       }
 
       function drawLabels () {
         labels.
           append('text').
-            attr('transform', 'rotate(-90) translate(0,' + (margin.left + 20) + ')').
+            attr('transform', 'rotate(-90) ' + common.translate(0, margin.left + 20)).
             style({
               'text-anchor': 'end',
               'fill': getColor('labels')
@@ -122,15 +121,19 @@ angular.module('picardy.graphs.line', ['picardy.graphs.common'])
 
         path = lines.append('path').
           datum(d3Data).
-          attr('transform', 'translate(' + margin.left + ',0)').
-          attr('class', 'line').
-          attr('d', line);
+          attr({
+            'transform': common.translate(margin.left, 0),
+            'class': 'line',
+            'd': line
+          });
 
         totalLength = path.node().getTotalLength();
 
         path.
-          attr('stroke-dasharray', totalLength + ' ' + totalLength).
-          attr('stroke-dashoffset', totalLength).
+          attr({
+            'stroke-dasharray': totalLength + ' ' + totalLength,
+            'stroke-dashoffset': totalLength
+          }).
           transition().
             duration(duration).
             delay(delay).
@@ -138,14 +141,18 @@ angular.module('picardy.graphs.line', ['picardy.graphs.common'])
             attr('stroke-dashoffset', 0);
 
         lines.selectAll('.line').
-          style('fill', 'none').
-          style('stroke', getColor('lines')).
-          style('stroke-width', '1.5px');
+          style({
+            'fill': 'none',
+            'stroke': getColor('lines'),
+            'stroke-width': '1.5px'
+          });
       }
 
       svg.
-        attr('width', width + margin.left + margin.right).
-        attr('height', height + margin.top + margin.bottom);
+        attr({
+          'width': width + margin.left + margin.right,
+          'height': height + margin.top + margin.bottom
+        });
 
       drawAxes();
       drawLabels();
@@ -153,23 +160,7 @@ angular.module('picardy.graphs.line', ['picardy.graphs.common'])
 
     }
 
-    return {
-      restrict: 'E',
-      scope: {
-        render: '=',
-        data: '=',
-        width: '@',
-        height: '@',
-        duration: '@',
-        delay: '@'
-      },
-      link: function (scope, element, attrs) {
-        $rootScope[attrs.render] = function (data) {
-          scope.data = data;
-          render(scope, element, attrs);
-        };
-      }
-    };
+    return common.define($rootScope, render);
   }]);
 
 'use strict';
@@ -179,36 +170,22 @@ angular.module('picardy.graphs.pie', ['picardy.graphs.common'])
 
     function render (scope, element) {
 
-      var _data, d3Data, options, svg, slices, labels, lines, text, min, radius, pie, innerArc, outerArc, percentage;
+      var _data, d3Data, options, getColor, svg, slices, labels, lines, text, min, radius, pie, innerArc, outerArc, percentage;
 
       if (!scope.data) {
         return;
       }
 
       _data = angular.copy(scope.data);
-
-      function getColor (type, i) {
-        if (_data.colors && _data.colors[type]) {
-          if (type === 'slices') {
-            if (_data.colors.slices) {
-              return _data.colors.slices[i];
-            } else {
-              return d3.scale.category10().range()[i];
-            }
-          }
-          return _data.colors[type];
-        }
-        return 'black';
-      }
-
+      getColor = common.colors(_data.colors);
       d3Data = {start: [], end: []};
 
-      options = {
-        labels: _data.labels && _data.labels.length,
-        height: _data.width === undefined ? 300 : _data.width,
-        delay: _data.delay === undefined ? 500 : _data.delay,
-        duration: _data.duration === undefined ? 1000 : _data.duration
-      };
+      options = common.defaults(_data, {
+        height: 300,
+        delay: 500,
+        duration: 1000
+      });
+      options.labels = _data.labels && _data.labels.length;
       options.width = _data.width === undefined ? options.height + (options.labels ? 200 : 0) : _data.width;
 
       svg = common.initSvg(element[0], options.width, options.height);
@@ -237,14 +214,14 @@ angular.module('picardy.graphs.pie', ['picardy.graphs.common'])
       options.pieWidth = 300;
       options.pieHeight = 300;
 
-      slices = svg.append('g').attr('class', 'slices');
-      labels = svg.append('g').attr('class', 'labels');
-      lines = svg.append('g').attr('class', 'lines');
-      text = svg.append('g').attr('class', 'text');
+      slices = common.newLayer(svg, 'slices');
+      lines = common.newLayer(svg, 'lines');
+      labels = common.newLayer(svg, 'labels');
+      text = common.newLayer(svg, 'text');
 
       svg.selectAll('g').
         attr('transform', function () {
-          return 'translate(' + options.width / 2 + ',' + options.height / 2 + ')';
+          return common.translate(options.width / 2, options.height / 2);
         });
 
       // set the thickness of the inner and outer radii
@@ -266,9 +243,9 @@ angular.module('picardy.graphs.pie', ['picardy.graphs.common'])
         outerRadius(radius * 0.9);
 
       percentage = text.append('text').
-        attr('text-anchor', 'middle').
-        attr('alignment-baseline', 'central').
         attr({
+          'text-anchor': 'middle',
+          'alignment-baseline': 'central',
           'style': 'font-size: ' + options.pieWidth / 6 + 'px',
           'fill': getColor('amount')
         });
@@ -336,18 +313,22 @@ angular.module('picardy.graphs.pie', ['picardy.graphs.common'])
 
         labelsD.enter().
           append('text').
-          attr('dy', '.35em').
-          style('fill', getColor('labels')).
           text(function (d) {
             return d.data.label;
           }).
-          attr('transform', function (d) {
-            var pos = outerArc.centroid(d);
-            pos[0] = radius * (midAngle(d) < Math.PI ? 1 : -1);
-            return 'translate(' + pos + ')';
+          attr({
+            'dy': '.35em',
+            'transform': function (d) {
+              var pos = outerArc.centroid(d);
+              pos[0] = radius * (midAngle(d) < Math.PI ? 1 : -1);
+              return common.translate(pos);
+            }
           }).
-          style('text-anchor', function (d) {
-            return midAngle(d) < Math.PI ? 'start' : 'end';
+          style({
+            'fill': getColor('labels'),
+            'text-anchor': function (d) {
+              return midAngle(d) < Math.PI ? 'start' : 'end';
+            }
           });
       }
 
@@ -366,20 +347,7 @@ angular.module('picardy.graphs.pie', ['picardy.graphs.common'])
 
     }
 
-    return {
-      restrict: 'E',
-      scope: {
-        render: '=',
-        data: '='
-      },
-      link: function (scope, element, attrs) {
-        $rootScope[attrs.render] = function (data) {
-          scope.data = data;
-          render(scope, element, attrs);
-        };
-      }
-    };
-
+    return common.define($rootScope, render);
 }]);
 
 'use strict';
@@ -387,25 +355,67 @@ angular.module('picardy.graphs.pie', ['picardy.graphs.common'])
 angular.module('picardy.graphs.common', [])
   .factory('common', function () {
 
-    return {
+    var common = {
 
-      readOptions: function (scope, element, attrs) {
-
-        function _getValue (attrValue, defaultValue) {
-          return attrValue === undefined ? defaultValue : attrValue;
-        }
-
+      define: function ($rootScope, render) {
         return {
-          delay: _getValue(attrs.delay, 500),
-          duration: _getValue(attrs.duration, 1000)
+          restrict: 'E',
+          scope: {
+            render: '=',
+            data: '='
+          },
+          link: function (scope, element, attrs) {
+            $rootScope[attrs.render] = function (data) {
+              scope.data = data;
+              render(scope, element, attrs);
+            };
+          }
         };
       },
 
       initSvg: function (el, width, height) {
-
         return d3.select(el)
           .append('svg')
           .attr('viewBox', [0, 0, width, height].join(' '));
+      },
+
+      colors: function (colors) {
+        return function getColor (type, i) {
+          var color;
+          if (colors) {
+            color = colors[type];
+            if (color) {
+              if (i === undefined) {
+                return color;
+              } else if (color.length > i) {
+                return color[i];
+              } else {
+                return d3.scale.category10().range()[i];
+              }
+            }
+          }
+          return 'black';
+        };
+      },
+
+      newLayer: function (svg, name) {
+        return svg.append('g').attr('class', name);
+      },
+
+      defaults: function (obj, defaults) {
+        var key, newObj = {};
+        for (key in defaults) {
+          if (obj[key] === undefined && defaults.hasOwnProperty(key)) {
+            newObj[key] = defaults[key];
+          }
+        }
+        return newObj;
+      },
+
+      translate: function (x, y) {
+        return 'translate(' + x + (y === undefined ? '' : ',' + y) + ')';
       }
     };
+
+    return common;
   });
