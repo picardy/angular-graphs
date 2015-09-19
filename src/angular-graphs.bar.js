@@ -5,7 +5,7 @@ angular.module('picardy.graphs.bar', ['picardy.graphs.common'])
 
     function render (scope, element) {
 
-      var _data, d3Data, options, getColor, svg, margin, width, height, x, y, labels, axes, bars, info;
+      var _data, options, getColor, svg, margin, width, height, x, y, labels, axes, bars, info;
 
       if (!scope.data) {
         return;
@@ -13,7 +13,6 @@ angular.module('picardy.graphs.bar', ['picardy.graphs.common'])
 
       _data = angular.copy(scope.data);
       getColor = common.colors(_data.colors);
-      d3Data = [];
 
       options = common.defaults(_data, {
         height: 300,
@@ -36,8 +35,12 @@ angular.module('picardy.graphs.bar', ['picardy.graphs.common'])
       x = d3.scale.ordinal().rangeRoundBands([0, width], 0.2);
       y = d3.scale.linear().range([height, 0]);
 
-      x.domain(_data.data.map(function(d) { return d.x; }));
-      y.domain([0, d3.max(_data.data, function(d) { return d.y; })]);
+      x.domain(_data.data.map(function (d) {
+        return d.x;
+      }));
+      y.domain([0, d3.max(_data.data, function (d) {
+        return d.y;
+      })]);
 
       function drawAxes () {
         var xAxis, yAxis;
@@ -57,7 +60,7 @@ angular.module('picardy.graphs.bar', ['picardy.graphs.common'])
           append('g').
             attr({
               'class': 'x axis',
-              'transform': common.translate(margin.left, height+1)
+              'transform': common.translate(margin.left, height + 1)
             }).
             call(xAxis).
             selectAll('text').
@@ -104,7 +107,7 @@ angular.module('picardy.graphs.bar', ['picardy.graphs.common'])
           info.
             append('text').
               attr({
-                'transform': common.translate(margin.left + x(d.x) + x.rangeBand()/2, height+40),
+                'transform': common.translate(margin.left + x(d.x) + x.rangeBand() / 2, height + 40),
                 'text-anchor': 'middle',
                 'alignment-baseline': 'central'
               })
@@ -137,7 +140,7 @@ angular.module('picardy.graphs.bar', ['picardy.graphs.common'])
               'width': x.rangeBand(),
               'height': 0,
               'transform': function (d) {
-                return common.translate(margin.left + x(d.x), height+1);
+                return common.translate(margin.left + x(d.x), height + 1);
               },
               'fill': getColor('bars')
             })
@@ -147,7 +150,7 @@ angular.module('picardy.graphs.bar', ['picardy.graphs.common'])
             }).
             transition().delay(delay).duration(duration).
               attr('transform', function (d) {
-                return common.translate(margin.left + x(d.x), y(d.y)+1);
+                return common.translate(margin.left + x(d.x), y(d.y) + 1);
               }).
               attr('height', function (d) {
                 return height - y(d.y);
