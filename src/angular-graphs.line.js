@@ -34,11 +34,9 @@ angular.module('picardy.graphs.line', ['picardy.graphs.common'])
 
       parseDate = d3.time.format('%d-%b-%y').parse;
 
-      angular.forEach(_data.x, function (val, i) {
-        d3Data.push({
-          x: parseDate(val),
-          y: _data.y[i]
-        });
+      angular.forEach(_data.data, function (d) {
+        d.x = parseDate(d.x);
+        d3Data.push(d);
       });
 
       x = d3.time.scale().range([0, width - 20]);
@@ -96,7 +94,7 @@ angular.module('picardy.graphs.line', ['picardy.graphs.common'])
           });
       }
 
-      function drawLabels () {
+      function drawLabels (yLabel) {
         labels.
           append('text').
             attr('transform', 'rotate(-90) ' + common.translate(0, margin.left + 20)).
@@ -104,7 +102,7 @@ angular.module('picardy.graphs.line', ['picardy.graphs.common'])
               'text-anchor': 'end',
               'fill': getColor('labels')
             }).
-            text('Completion (%)');
+            text(yLabel);
       }
 
       function drawLines (delay, duration) {
@@ -155,7 +153,7 @@ angular.module('picardy.graphs.line', ['picardy.graphs.common'])
         });
 
       drawAxes();
-      drawLabels();
+      drawLabels(_data.labels.y);
       drawLines(options.delay, options.duration);
 
     }
