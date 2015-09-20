@@ -51,13 +51,13 @@ angular.module('picardy.graphs.common', [])
       },
 
       defaults: function (obj, defaults) {
-        var key, newObj = {};
+        var key;
         for (key in defaults) {
           if (obj[key] === undefined && defaults.hasOwnProperty(key)) {
-            newObj[key] = defaults[key];
+            obj[key] = defaults[key];
           }
         }
-        return newObj;
+        return obj;
       },
 
       translate: function (x, y) {

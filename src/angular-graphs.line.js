@@ -5,22 +5,24 @@ angular.module('picardy.graphs.line', ['picardy.graphs.common'])
 
     function render (scope, element) {
 
-      var _data, d3Data, options, getColor, svg, parseDate, margin, width, height, x, y, labels, axes, lines;
+      var options, d3Data, options, getColor, svg, parseDate, margin, width, height, x, y, labels, axes, lines;
 
       if (!scope.data) {
         return;
       }
 
-      _data = angular.copy(scope.data);
-      getColor = common.colors(_data.colors);
+      options = angular.copy(scope.data);
+      getColor = common.colors(options.colors);
       d3Data = [];
 
-      options = common.defaults(_data, {
+      common.defaults(options, {
         height: 300,
         delay: 500,
         duration: 1000
       });
-      options.width = scope.width === undefined ? options.height * 2 : scope.width;
+      if (options.width === undefined) {
+        options.width = options.height * 2;
+      }
 
       svg = common.initSvg(element[0], options.width, options.height);
 
@@ -34,7 +36,7 @@ angular.module('picardy.graphs.line', ['picardy.graphs.common'])
 
       parseDate = d3.time.format('%d-%b-%y').parse;
 
-      angular.forEach(_data.data, function (d) {
+      angular.forEach(options.data, function (d) {
         d.x = parseDate(d.x);
         d3Data.push(d);
       });
@@ -153,7 +155,7 @@ angular.module('picardy.graphs.line', ['picardy.graphs.common'])
         });
 
       drawAxes();
-      drawLabels(_data.labels.y);
+      drawLabels(options.labels.y);
       drawLines(options.delay, options.duration);
 
     }

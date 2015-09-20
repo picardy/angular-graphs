@@ -5,38 +5,39 @@ angular.module('picardy.graphs.pie', ['picardy.graphs.common'])
 
     function render (scope, element) {
 
-      var _data, d3Data, options, getColor, svg, slices, labels, lines, text, min, radius, pie, innerArc, outerArc, percentage;
+      var options, d3Data, options, getColor, svg, slices, labels, lines, text, min, radius, pie, innerArc, outerArc, percentage;
 
       if (!scope.data) {
         return;
       }
 
-      _data = angular.copy(scope.data);
-      getColor = common.colors(_data.colors);
+      options = angular.copy(scope.data);
+      getColor = common.colors(options.colors);
       d3Data = {start: [], end: []};
 
-      options = common.defaults(_data, {
+      common.defaults(options, {
         height: 300,
         delay: 500,
         duration: 1000
       });
-      options.labels = _data.labels && _data.labels.length;
-      options.width = _data.width === undefined ? options.height + (options.labels ? 200 : 0) : _data.width;
+      if (options.width === undefined) {
+        options.width = options.height + (options.labels ? 200 : 0);
+      }
 
       svg = common.initSvg(element[0], options.width, options.height);
 
-      angular.forEach(_data.start, function (val, i) {
-        var label = options.labels ? _data.labels[i] : Math.random(),
+      angular.forEach(options.start, function (val, i) {
+        var label = options.labels ? options.labels[i] : Math.random(),
             color = getColor('slices', i);
 
         d3Data.start.push({
-          value: _data.start[i],
+          value: options.start[i],
           label: label,
           color: color
         });
 
         d3Data.end.push({
-          value: _data.end[i],
+          value: options.end[i],
           label: label,
           color: color
         });

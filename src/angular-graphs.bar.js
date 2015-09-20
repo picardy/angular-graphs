@@ -5,21 +5,23 @@ angular.module('picardy.graphs.bar', ['picardy.graphs.common'])
 
     function render (scope, element) {
 
-      var _data, options, getColor, svg, margin, width, height, x, y, labels, axes, bars, info;
+      var options, options, getColor, svg, margin, width, height, x, y, labels, axes, bars, info;
 
       if (!scope.data) {
         return;
       }
 
-      _data = angular.copy(scope.data);
-      getColor = common.colors(_data.colors);
+      options = angular.copy(scope.data);
+      getColor = common.colors(options.colors);
 
-      options = common.defaults(_data, {
+      common.defaults(options, {
         height: 300,
         delay: 500,
         duration: 1000
       });
-      options.width = scope.width === undefined ? options.height * 2 : scope.width;
+      if (options.width === undefined) {
+        options.width = options.height * 2;
+      }
 
       svg = common.initSvg(element[0], options.width, options.height);
 
@@ -35,10 +37,10 @@ angular.module('picardy.graphs.bar', ['picardy.graphs.common'])
       x = d3.scale.ordinal().rangeRoundBands([0, width], 0.2);
       y = d3.scale.linear().range([height, 0]);
 
-      x.domain(_data.data.map(function (d) {
+      x.domain(options.data.map(function (d) {
         return d.x;
       }));
-      y.domain([0, d3.max(_data.data, function (d) {
+      y.domain([0, d3.max(options.data, function (d) {
         return d.y;
       })]);
 
@@ -132,7 +134,7 @@ angular.module('picardy.graphs.bar', ['picardy.graphs.common'])
       function drawBars (delay, duration) {
         bars
           .selectAll('.bar')
-          .data(_data.data)
+          .data(options.data)
           .enter()
             .append('rect')
             .attr({
@@ -164,7 +166,7 @@ angular.module('picardy.graphs.bar', ['picardy.graphs.common'])
         });
 
       drawAxes();
-      drawLabels(_data.labels.y);
+      drawLabels(options.labels.y);
       drawBars(options.delay, options.duration);
     }
 
