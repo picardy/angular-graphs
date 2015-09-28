@@ -78,7 +78,7 @@
         </div>
         <div class="example__javascript">
           <div class="example__title text_group__title">Javascript</div>
-          <pre class="example__text text_group__text">$scope.drawBar({&#10;  colors: {&#10;    axes: &apos;#222&apos;,&#10;    labels: &apos;#666&apos;,&#10;    bars: &apos;#F2CFDA&apos;,&#10;    focusedBar: &apos;#8A8FC0&apos;&#10;  },&#10;  labels: {&#10;    y: &apos;Number of people&apos;&#10;  },&#10;  data: [&#10;    {&#10;      x: &apos;Jacob&apos;,&#10;      y: 273642&#10;    }, {&#10;      x: &apos;Michael&apos;,&#10;      y: 250370&#10;    }, {&#10;      x: &apos;Joshua&apos;,&#10;      y: 231771&#10;    }, {&#10;      x: &apos;Matthew&apos;,&#10;      y: 221411&#10;    }, {&#10;      x: &apos;Daniel&apos;,&#10;      y: 203569&#10;    }, {&#10;      x: &apos;Christopher&apos;,&#10;      y: 203154&#10;    }, {&#10;      x: &apos;Andrew&apos;,&#10;      y: 202332&#10;    }, {&#10;      x: &apos;Ethan&apos;,&#10;      y: 201689&#10;    }, {&#10;      x: &apos;Joseph&apos;,&#10;      y: 194535&#10;    }, {&#10;      x: &apos;William&apos;,&#10;      y: 194199&#10;    }, {&#10;      x: &apos;Anthony&apos;,&#10;      y: 191710&#10;    }, {&#10;      x: &apos;David&apos;,&#10;      y: 179656&#10;    },&#10;  ]&#10;});</pre>
+          <pre class="example__text text_group__text">$scope.drawBar({&#10;  colors: {&#10;    axes: &apos;#222&apos;,&#10;    labels: &apos;#666&apos;,&#10;    bars: &apos;#F2CFDA&apos;,&#10;    focusedBar: &apos;#8A8FC0&apos;&#10;  },&#10;  infoFormat: &apos;{x} - {y}&apos;,&#10;  labels: {&#10;    y: &apos;Number of people&apos;&#10;  },&#10;  data: [&#10;    {&#10;      x: &apos;Jacob&apos;,&#10;      y: 273642&#10;    }, {&#10;      x: &apos;Michael&apos;,&#10;      y: 250370&#10;    }, {&#10;      x: &apos;Joshua&apos;,&#10;      y: 231771&#10;    }, {&#10;      x: &apos;Matthew&apos;,&#10;      y: 221411&#10;    }, {&#10;      x: &apos;Daniel&apos;,&#10;      y: 203569&#10;    }, {&#10;      x: &apos;Christopher&apos;,&#10;      y: 203154&#10;    }, {&#10;      x: &apos;Andrew&apos;,&#10;      y: 202332&#10;    }, {&#10;      x: &apos;Ethan&apos;,&#10;      y: 201689&#10;    }, {&#10;      x: &apos;Joseph&apos;,&#10;      y: 194535&#10;    }, {&#10;      x: &apos;William&apos;,&#10;      y: 194199&#10;    }, {&#10;      x: &apos;Anthony&apos;,&#10;      y: 191710&#10;    }, {&#10;      x: &apos;David&apos;,&#10;      y: 179656&#10;    },&#10;  ]&#10;});</pre>
         </div>
       </div>
       <div class="example__output">
@@ -156,6 +156,7 @@
               bars: '#F2CFDA',
               focusedBar: '#8A8FC0'
             },
+            infoFormat: '{x} - {y}',
             labels: {
               y: 'Number of people'
             },

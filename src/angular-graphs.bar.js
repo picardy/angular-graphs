@@ -17,7 +17,8 @@ angular.module('picardy.graphs.bar', ['picardy.graphs.common'])
       common.defaults(options, {
         height: 300,
         delay: 500,
-        duration: 1000
+        duration: 1000,
+        infoFormat: '{y} · {x}'
       });
       if (options.width === undefined) {
         options.width = options.height * 2;
@@ -30,7 +31,7 @@ angular.module('picardy.graphs.bar', ['picardy.graphs.common'])
       axes = common.newLayer(svg, 'axes');
       info = common.newLayer(svg, 'info');
 
-      margin = {top: 20, right: 20, bottom: 30, left: 125};
+      margin = {top: 20, right: 20, bottom: 30, left: 20};
       width = options.width - margin.left - margin.right;
       height = options.height - margin.top - margin.bottom;
 
@@ -54,31 +55,25 @@ angular.module('picardy.graphs.bar', ['picardy.graphs.common'])
           .scale(y)
           .orient('left');
 
+        /* Y AXIS */
+        var yNode = axes.
+          append('g').
+            call(yAxis).
+            attr('class', 'y axis').
+            selectAll('text').
+              style('fill', getColor('axes'));
+
         /* X AXIS */
         xAxis.
           tickFormat('');
 
         axes.
           append('g').
-            attr({
-              'class': 'x axis',
-              'transform': common.translate(margin.left, height + 1)
-            }).
+            attr('class', 'x axis').
             call(xAxis).
             selectAll('text').
               style('fill', getColor('axes')).
               attr('transform', common.translate(0, 10));
-
-        /* Y AXIS */
-        axes.
-          append('g').
-            attr({
-              'class': 'y axis',
-              'transform': common.translate(margin.left, 1)
-            }).
-            call(yAxis).
-            selectAll('text').
-              style('fill', getColor('axes'));
 
         axes.selectAll('.axis path, .axis line').
           style({
@@ -91,12 +86,18 @@ angular.module('picardy.graphs.bar', ['picardy.graphs.common'])
       function drawLabels (yLabel) {
         labels.
           append('text').
-            attr('transform', 'rotate(-90) ' + common.translate(-10, 20)).
+            attr('transform', 'rotate(-90) ' + common.translate(-10, 0)).
             style({
               'text-anchor': 'end',
               'fill': getColor('labels')
             }).
             text(yLabel);
+      }
+
+      function getFormattedInfo (input) {
+        return options.infoFormat.
+          replace('{x}', input.x).
+          replace('{y}', input.y);
       }
 
       function toggleBarFocus (bar, isFocused) {
@@ -108,12 +109,21 @@ angular.module('picardy.graphs.bar', ['picardy.graphs.common'])
         if (isShown) {
           info.
             append('text').
+              text(getFormattedInfo(d)).
               attr({
-                'transform': common.translate(margin.left + x(d.x) + x.rangeBand() / 2, height + 40),
                 'text-anchor': 'middle',
-                'alignment-baseline': 'central'
-              })
-              .text(d.x + ' ' + d.y);
+                'alignment-baseline': 'central',
+                'transform': function () {
+                  var boxWidthHalf = this.getBBox().width / 2;
+                  var xPos = margin.left + x(d.x) + x.rangeBand() / 2;
+                  var xMax = width - boxWidthHalf;
+                  var xMin = margin.left + boxWidthHalf;
+
+                  xPos = Math.max(xMin, Math.min(xMax, xPos));
+
+                  return common.translate(xPos, height + 40);
+                }
+              });
         } else {
           info.
             selectAll('text')
@@ -131,7 +141,7 @@ angular.module('picardy.graphs.bar', ['picardy.graphs.common'])
         toggleBarInfo(d, false);
       }
 
-      function drawBars (delay, duration) {
+      function drawBars () {
         bars
           .selectAll('.bar')
           .data(options.data)
@@ -141,14 +151,31 @@ angular.module('picardy.graphs.bar', ['picardy.graphs.common'])
               'class': 'bar',
               'width': x.rangeBand(),
               'height': 0,
-              'transform': function (d) {
-                return common.translate(margin.left + x(d.x), height + 1);
-              },
               'fill': getColor('bars')
             })
             .on({
               'mouseover': onMouseoverBar,
               'mouseout': onMouseoutBar
+            });
+      }
+
+      function resolveXAxis (delay, duration) {
+        svg.selectAll('.y.axis')
+          .attr('transform', function () {
+            var labelWidth = this.getBBox().width;
+            margin.left += labelWidth;
+            width += labelWidth;
+            return common.translate(margin.left, 1);
+          });
+
+        svg.selectAll('.x.axis')
+          .attr('transform', function () {
+            return common.translate(margin.left, height + 1);
+          });
+
+        svg.selectAll('.bar')
+            .attr('transform', function (d) {
+              return common.translate(margin.left + x(d.x), height + 1);
             }).
             transition().delay(delay).duration(duration).
               attr('transform', function (d) {
@@ -157,17 +184,22 @@ angular.module('picardy.graphs.bar', ['picardy.graphs.common'])
               attr('height', function (d) {
                 return height - y(d.y);
               });
-      }
 
-      svg.
-        attr({
-          'width': width + margin.left + margin.right,
-          'height': height + margin.top + margin.bottom
-        });
+        svg.
+          attr({
+            width: function () {
+              return width + margin.left + margin.right;
+            },
+            height: function () {
+              return height + margin.top + margin.bottom;
+            }
+          });
+      }
 
       drawAxes();
       drawLabels(options.labels.y);
-      drawBars(options.delay, options.duration);
+      drawBars();
+      resolveXAxis(options.delay, options.duration);
     }
 
     return common.define($rootScope, render);
