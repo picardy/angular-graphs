@@ -5,24 +5,43 @@ angular.module('picardy.graphs.bar', ['picardy.graphs.common'])
 
     function render (scope, element) {
 
-      var options, options, getColor, svg, margin, width, height, x, y, labels, axes, bars, info;
+      var options, options, getColor, svg, margin, x, y, labels, axes, bars, info;
 
       if (!scope.data) {
         return;
+      }
+
+      function isVertical () {
+        return options.orientation === 'vertical';
       }
 
       options = angular.copy(scope.data);
       getColor = common.colors(options.colors);
 
       common.defaults(options, {
-        height: 300,
         delay: 500,
         duration: 1000,
-        infoFormat: '{y} · {x}'
+        infoFormat: '{y} · {x}',
+        orientation: 'vertical'
       });
-      if (options.width === undefined) {
-        options.width = options.height * 2;
+
+      if (isVertical()) {
+        common.defaults(options, {
+          height: 300
+        });
+        if (options.width === undefined) {
+          options.width = options.height * 2;
+        }
+      } else {
+        common.defaults(options, {
+          width: 300
+        });
+        if (options.height === undefined) {
+          options.height = options.width * 2;
+        }
       }
+
+
 
       svg = common.initSvg(element[0], options.width, options.height);
 
@@ -41,7 +60,10 @@ angular.module('picardy.graphs.bar', ['picardy.graphs.common'])
             text(yLabel).
             attr('transform', function () {
               margin.label = this.getBBox().height;
-              return 'rotate(-90) ' + common.translate(-10, margin.label);
+              if (isVertical()) {
+                return 'rotate(-90) ' + common.translate(-10, margin.label);
+              }
+              return common.translate(options.width, margin.info + margin.label);
             }).
             style({
               'text-anchor': 'end',
@@ -51,16 +73,31 @@ angular.module('picardy.graphs.bar', ['picardy.graphs.common'])
       }
 
       function drawYAxis (done) {
-        var yAxis;
+        var axisLength = options.height,
+            yAxis;
 
-        y = d3.scale.linear().range([options.height - margin.info, 0]);
-        y.domain([0, d3.max(options.data, function (d) {
-          return d.y;
-        })]);
+        if (isVertical()) {
+          axisLength -= margin.info;
+          y = d3.scale.linear().range([axisLength, 0]);
+          y.domain([0, d3.max(options.data, function (d) {
+            return d.y;
+          })]);
+        } else {
+          axisLength -= margin.info + margin.label + 21;
+          y = d3.scale.ordinal().rangeRoundBands([0, axisLength], 0.2);
+          y.domain(options.data.map(function (d) {
+            return d.x;
+          }));
+        }
 
         yAxis = d3.svg.axis()
           .scale(y)
           .orient('left');
+
+        if (!isVertical()) {
+          yAxis.
+            tickFormat('');
+        }
 
         axes.
           append('g').
@@ -68,8 +105,16 @@ angular.module('picardy.graphs.bar', ['picardy.graphs.common'])
             attr({
               'class': 'y axis',
               'transform': function () {
-                margin.yAxis = this.getBBox().width;
-                return common.translate(margin.label + margin.yAxis + 20, 1);
+                var xPos = 0;
+                var yPos = 1;
+                if (isVertical()) {
+                  margin.yAxis = this.getBBox().width;
+                  xPos = margin.label + margin.yAxis + 20;
+                } else {
+                  xPos += 20;
+                  yPos += margin.info + margin.label + 20;
+                }
+                return common.translate(xPos, yPos);
               },
               'done': done
             }).
@@ -78,17 +123,25 @@ angular.module('picardy.graphs.bar', ['picardy.graphs.common'])
       }
 
       function drawXAxis () {
-        var xAxis;
+        var axisLength = options.width - 21,
+            xAxis;
 
-        x = d3.scale.ordinal().rangeRoundBands([0, options.width - margin.label - margin.yAxis - 20 - 1], 0.2);
-
-        x.domain(options.data.map(function (d) {
-          return d.x;
-        }));
+        if (isVertical()) {
+          axisLength -= margin.label + margin.yAxis;
+          x = d3.scale.ordinal().rangeRoundBands([0, axisLength], 0.2);
+          x.domain(options.data.map(function (d) {
+            return d.x;
+          }));
+        } else {
+          x = d3.scale.linear().range([axisLength, 0]);
+          x.domain([0, d3.max(options.data, function (d) {
+            return d.y;
+          })]);
+        }
 
         xAxis = d3.svg.axis()
           .scale(x)
-          .orient('bottom');
+          .orient(isVertical() ? 'bottom' : 'top');
 
         xAxis.
           tickFormat('');
@@ -99,7 +152,11 @@ angular.module('picardy.graphs.bar', ['picardy.graphs.common'])
             attr({
               'class': 'x axis',
               'transform': function () {
-                return common.translate(margin.label + margin.yAxis + 20, options.height - margin.info + 1);
+                var xPos = 20,
+                    yPos = 1;
+                return isVertical()
+                  ? common.translate(xPos + margin.label + margin.yAxis, yPos + options.height - margin.info)
+                  : common.translate(xPos, yPos + margin.info + margin.label + 20);
               }
             }).
             selectAll('text').
@@ -139,17 +196,24 @@ angular.module('picardy.graphs.bar', ['picardy.graphs.common'])
             append('text').
               text(getFormattedInfo(d)).
               attr({
-                'text-anchor': 'middle',
+                'text-anchor': isVertical() ? 'middle' : 'left',
                 'alignment-baseline': 'central',
                 'transform': function () {
-                  var boxWidthHalf = this.getBBox().width / 2;
-                  var xPos = margin.label + margin.yAxis + 20 + x(d.x) + x.rangeBand() / 2;
-                  var xMax = options.width - boxWidthHalf;
-                  var xMin = margin.label + margin.yAxis + 20 + boxWidthHalf;
+                  var xPos, yPos;
+                  if (isVertical()) {
+                    var boxWidthHalf = this.getBBox().width / 2;
+                    yPos = options.height - this.getBBox().height;
+                    xPos = margin.label + margin.yAxis + 20 + x(d.x) + x.rangeBand() / 2;
+                    var xMax = options.width - boxWidthHalf;
+                    var xMin = margin.label + margin.yAxis + 20 + boxWidthHalf;
 
-                  xPos = Math.max(xMin, Math.min(xMax, xPos));
+                    xPos = Math.max(xMin, Math.min(xMax, xPos));
+                  } else {
+                    xPos = 20;
+                    yPos = margin.info / 2;
+                  }
 
-                  return common.translate(xPos, options.height - this.getBBox().height);
+                  return common.translate(xPos, yPos);
                 }
               });
         } else {
@@ -170,6 +234,24 @@ angular.module('picardy.graphs.bar', ['picardy.graphs.common'])
       }
 
       function drawBars () {
+        var attrTransitions = {
+          transform: function (d) {
+            return isVertical()
+              ? common.translate(margin.label + margin.yAxis + 20 + x(d.x), y(d.y) + 1)
+              : common.translate(20, margin.info + margin.label + y(d.x) + 21);
+          }
+        };
+
+        if (isVertical()) {
+          attrTransitions.height = function (d) {
+            return options.height - margin.info - y(d.y);
+          };
+        } else {
+          attrTransitions.width = function (d) {
+            return options.width - x(d.y) - 21;
+          };
+        }
+
         bars
           .selectAll('.bar')
           .data(options.data)
@@ -178,10 +260,12 @@ angular.module('picardy.graphs.bar', ['picardy.graphs.common'])
             .attr({
               'class': 'bar',
               'fill': getColor('bars'),
-              'width': x.rangeBand(),
-              'height': 0,
+              'width': isVertical() ? x.rangeBand() : 0,
+              'height': isVertical() ? 0 : y.rangeBand(),
               'transform': function (d) {
-                return common.translate(margin.label + margin.yAxis + 20 + x(d.x), options.height - margin.info + 1);
+                return isVertical()
+                  ? common.translate(margin.label + margin.yAxis + 20 + x(d.x), options.height - margin.info + 1)
+                  : common.translate(20, margin.info + margin.label + y(d.x) + 21);
               }
             })
             .on({
@@ -189,12 +273,7 @@ angular.module('picardy.graphs.bar', ['picardy.graphs.common'])
               'mouseout': onMouseoutBar
             }).
             transition().delay(options.delay).duration(options.duration).
-              attr('transform', function (d) {
-                return common.translate(margin.label + margin.yAxis + 20 + x(d.x), y(d.y) + 1);
-              }).
-              attr('height', function (d) {
-                return options.height - margin.info - y(d.y);
-              });
+              attr(attrTransitions);
       }
 
       svg.
