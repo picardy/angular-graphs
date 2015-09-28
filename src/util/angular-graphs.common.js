@@ -24,7 +24,10 @@ angular.module('picardy.graphs.common', [])
       initSvg: function (el, width, height) {
         return d3.select(el)
           .append('svg')
-          .attr('viewBox', [0, 0, width, height].join(' '));
+          .attr({
+            'viewBox': [0, 0, width, height].join(' '),
+            'preserveAspectRatio': 'xMinYMin meet'
+          });
       },
 
       colors: function (colors) {
