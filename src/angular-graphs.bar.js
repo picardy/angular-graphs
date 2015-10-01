@@ -41,7 +41,9 @@ angular.module('picardy.graphs.bar', ['picardy.graphs.common'])
         }
       }
 
-
+      if (element[0].children.length > 0) {
+          element[0].children[0].remove();
+      }
 
       svg = common.initSvg(element[0], options.width, options.height);
 
