@@ -5,22 +5,44 @@ angular.module('picardy.graphs.bar', ['picardy.graphs.common'])
 
     function render (scope, element) {
 
-      var options, options, getColor, svg, margin, width, height, x, y, labels, axes, bars, info;
+      var options, options, getColor, svg, margin, x, y, labels, axes, bars, info;
 
       if (!scope.data) {
         return;
+      }
+
+      function isVertical () {
+        return options.orientation === 'vertical';
       }
 
       options = angular.copy(scope.data);
       getColor = common.colors(options.colors);
 
       common.defaults(options, {
-        height: 300,
         delay: 500,
-        duration: 1000
+        duration: 1000,
+        infoFormat: '{y} · {x}',
+        orientation: 'vertical'
       });
-      if (options.width === undefined) {
-        options.width = options.height * 2;
+
+      if (isVertical()) {
+        common.defaults(options, {
+          height: 300
+        });
+        if (options.width === undefined) {
+          options.width = options.height * 2;
+        }
+      } else {
+        common.defaults(options, {
+          width: 300
+        });
+        if (options.height === undefined) {
+          options.height = options.width * 2;
+        }
+      }
+
+      if (element[0].children.length > 0) {
+          element[0].children[0].remove();
       }
 
       svg = common.initSvg(element[0], options.width, options.height);
@@ -30,73 +52,139 @@ angular.module('picardy.graphs.bar', ['picardy.graphs.common'])
       axes = common.newLayer(svg, 'axes');
       info = common.newLayer(svg, 'info');
 
-      margin = {top: 20, right: 20, bottom: 30, left: 125};
-      width = options.width - margin.left - margin.right;
-      height = options.height - margin.top - margin.bottom;
+      margin = {
+        info: 50
+      };
 
-      x = d3.scale.ordinal().rangeRoundBands([0, width], 0.2);
-      y = d3.scale.linear().range([height, 0]);
+      function drawLabels (yLabel, done) {
+        labels.
+          append('text').
+            text(yLabel).
+            attr('transform', function () {
+              margin.label = this.getBBox().height;
+              if (isVertical()) {
+                return 'rotate(-90) ' + common.translate(-10, margin.label);
+              }
+              return common.translate(options.width, margin.info + margin.label);
+            }).
+            style({
+              'text-anchor': 'end',
+              'fill': getColor('labels'),
+              'done': done
+            });
+      }
 
-      x.domain(options.data.map(function (d) {
-        return d.x;
-      }));
-      y.domain([0, d3.max(options.data, function (d) {
-        return d.y;
-      })]);
+      function drawYAxis (done) {
+        var axisLength = options.height,
+            yAxis;
 
-      function drawAxes () {
-        var xAxis, yAxis;
+        if (isVertical()) {
+          axisLength -= margin.info;
+          y = d3.scale.linear().range([axisLength, 0]);
+          y.domain([0, d3.max(options.data, function (d) {
+            return d.y;
+          })]);
+        } else {
+          axisLength -= margin.info + margin.label + 21;
+          y = d3.scale.ordinal().rangeRoundBands([0, axisLength], 0.2);
+          y.domain(options.data.map(function (d) {
+            return d.x;
+          }));
+        }
 
-        xAxis = d3.svg.axis()
-          .scale(x)
-          .orient('bottom');
         yAxis = d3.svg.axis()
           .scale(y)
           .orient('left');
 
-        /* X AXIS */
+        if (!isVertical()) {
+          yAxis.
+            tickFormat('');
+        }
+
+        axes.
+          append('g').
+            call(yAxis).
+            attr({
+              'class': 'y axis',
+              'transform': function () {
+                var xPos = 0;
+                var yPos = 1;
+                if (isVertical()) {
+                  margin.yAxis = this.getBBox().width;
+                  xPos = margin.label + margin.yAxis + 20;
+                } else {
+                  xPos += 20;
+                  yPos += margin.info + margin.label + 20;
+                }
+                return common.translate(xPos, yPos);
+              },
+              'done': done
+            }).
+            selectAll('text').
+              style('fill', getColor('axes'));
+      }
+
+      function drawXAxis () {
+        var axisLength = options.width - 21,
+            xAxis;
+
+        if (isVertical()) {
+          axisLength -= margin.label + margin.yAxis;
+          x = d3.scale.ordinal().rangeRoundBands([0, axisLength], 0.2);
+          x.domain(options.data.map(function (d) {
+            return d.x;
+          }));
+        } else {
+          x = d3.scale.linear().range([axisLength, 0]);
+          x.domain([0, d3.max(options.data, function (d) {
+            return d.y;
+          })]);
+        }
+
+        xAxis = d3.svg.axis()
+          .scale(x)
+          .orient(isVertical() ? 'bottom' : 'top');
+
         xAxis.
           tickFormat('');
 
         axes.
           append('g').
+            call(xAxis).
             attr({
               'class': 'x axis',
-              'transform': common.translate(margin.left, height + 1)
+              'transform': function () {
+                var xPos = 20,
+                    yPos = 1;
+                return isVertical()
+                  ? common.translate(xPos + margin.label + margin.yAxis, yPos + options.height - margin.info)
+                  : common.translate(xPos, yPos + margin.info + margin.label + 20);
+              }
             }).
-            call(xAxis).
             selectAll('text').
               style('fill', getColor('axes')).
               attr('transform', common.translate(0, 10));
-
-        /* Y AXIS */
-        axes.
-          append('g').
-            attr({
-              'class': 'y axis',
-              'transform': common.translate(margin.left, 1)
-            }).
-            call(yAxis).
-            selectAll('text').
-              style('fill', getColor('axes'));
-
-        axes.selectAll('.axis path, .axis line').
-          style({
-            'fill': 'none',
-            'stroke': getColor('axes'),
-            'shape-rendering': 'crispEdges'
-          });
       }
 
-      function drawLabels (yLabel) {
-        labels.
-          append('text').
-            attr('transform', 'rotate(-90) ' + common.translate(-10, 20)).
+      function drawAxes (done) {
+        drawYAxis(function () {
+          drawXAxis();
+
+          axes.selectAll('.axis path, .axis line').
             style({
-              'text-anchor': 'end',
-              'fill': getColor('labels')
-            }).
-            text(yLabel);
+              'fill': 'none',
+              'stroke': getColor('axes'),
+              'shape-rendering': 'crispEdges'
+            });
+
+          done();
+        });
+      }
+
+      function getFormattedInfo (input) {
+        return options.infoFormat.
+          replace('{x}', input.x).
+          replace('{y}', input.y);
       }
 
       function toggleBarFocus (bar, isFocused) {
@@ -108,12 +196,28 @@ angular.module('picardy.graphs.bar', ['picardy.graphs.common'])
         if (isShown) {
           info.
             append('text').
+              text(getFormattedInfo(d)).
               attr({
-                'transform': common.translate(margin.left + x(d.x) + x.rangeBand() / 2, height + 40),
-                'text-anchor': 'middle',
-                'alignment-baseline': 'central'
-              })
-              .text(d.x + ' ' + d.y);
+                'text-anchor': isVertical() ? 'middle' : 'left',
+                'alignment-baseline': 'central',
+                'transform': function () {
+                  var xPos, yPos, boxWidthHalf, xMax, xMin;
+                  if (isVertical()) {
+                    boxWidthHalf = this.getBBox().width / 2;
+                    yPos = options.height - this.getBBox().height;
+                    xPos = margin.label + margin.yAxis + 20 + x(d.x) + x.rangeBand() / 2;
+                    xMax = options.width - boxWidthHalf;
+                    xMin = margin.label + margin.yAxis + 20 + boxWidthHalf;
+
+                    xPos = Math.max(xMin, Math.min(xMax, xPos));
+                  } else {
+                    xPos = 20;
+                    yPos = margin.info / 2;
+                  }
+
+                  return common.translate(xPos, yPos);
+                }
+              });
         } else {
           info.
             selectAll('text')
@@ -131,7 +235,25 @@ angular.module('picardy.graphs.bar', ['picardy.graphs.common'])
         toggleBarInfo(d, false);
       }
 
-      function drawBars (delay, duration) {
+      function drawBars () {
+        var attrTransitions = {
+          transform: function (d) {
+            return isVertical()
+              ? common.translate(margin.label + margin.yAxis + 20 + x(d.x), y(d.y) + 1)
+              : common.translate(20, margin.info + margin.label + y(d.x) + 21);
+          }
+        };
+
+        if (isVertical()) {
+          attrTransitions.height = function (d) {
+            return options.height - margin.info - y(d.y);
+          };
+        } else {
+          attrTransitions.width = function (d) {
+            return options.width - x(d.y) - 21;
+          };
+        }
+
         bars
           .selectAll('.bar')
           .data(options.data)
@@ -139,35 +261,34 @@ angular.module('picardy.graphs.bar', ['picardy.graphs.common'])
             .append('rect')
             .attr({
               'class': 'bar',
-              'width': x.rangeBand(),
-              'height': 0,
+              'fill': getColor('bars'),
+              'width': isVertical() ? x.rangeBand() : 0,
+              'height': isVertical() ? 0 : y.rangeBand(),
               'transform': function (d) {
-                return common.translate(margin.left + x(d.x), height + 1);
-              },
-              'fill': getColor('bars')
+                return isVertical()
+                  ? common.translate(margin.label + margin.yAxis + 20 + x(d.x), options.height - margin.info + 1)
+                  : common.translate(20, margin.info + margin.label + y(d.x) + 21);
+              }
             })
             .on({
               'mouseover': onMouseoverBar,
               'mouseout': onMouseoutBar
             }).
-            transition().delay(delay).duration(duration).
-              attr('transform', function (d) {
-                return common.translate(margin.left + x(d.x), y(d.y) + 1);
-              }).
-              attr('height', function (d) {
-                return height - y(d.y);
-              });
+            transition().delay(options.delay).duration(options.duration).
+              attr(attrTransitions);
       }
 
       svg.
         attr({
-          'width': width + margin.left + margin.right,
-          'height': height + margin.top + margin.bottom
+          width: options.width,
+          height: options.height
         });
 
-      drawAxes();
-      drawLabels(options.labels.y);
-      drawBars(options.delay, options.duration);
+      drawLabels(options.labels.y, function () {
+        drawAxes(function () {
+          drawBars();
+        });
+      });
     }
 
     return common.define($rootScope, render);
@@ -552,7 +673,10 @@ angular.module('picardy.graphs.common', [])
       initSvg: function (el, width, height) {
         return d3.select(el)
           .append('svg')
-          .attr('viewBox', [0, 0, width, height].join(' '));
+          .attr({
+            'viewBox': [0, 0, width, height].join(' '),
+            'preserveAspectRatio': 'xMinYMin meet'
+          });
       },
 
       colors: function (colors) {
