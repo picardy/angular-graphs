@@ -201,13 +201,13 @@ angular.module('picardy.graphs.bar', ['picardy.graphs.common'])
                 'text-anchor': isVertical() ? 'middle' : 'left',
                 'alignment-baseline': 'central',
                 'transform': function () {
-                  var xPos, yPos;
+                  var xPos, yPos, boxWidthHalf, xMax, xMin;
                   if (isVertical()) {
-                    var boxWidthHalf = this.getBBox().width / 2;
+                    boxWidthHalf = this.getBBox().width / 2;
                     yPos = options.height - this.getBBox().height;
                     xPos = margin.label + margin.yAxis + 20 + x(d.x) + x.rangeBand() / 2;
-                    var xMax = options.width - boxWidthHalf;
-                    var xMin = margin.label + margin.yAxis + 20 + boxWidthHalf;
+                    xMax = options.width - boxWidthHalf;
+                    xMin = margin.label + margin.yAxis + 20 + boxWidthHalf;
 
                     xPos = Math.max(xMin, Math.min(xMax, xPos));
                   } else {
