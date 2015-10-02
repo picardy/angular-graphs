@@ -193,6 +193,9 @@
             labels: {
               y: 'Number of people'
             },
+            max: {
+              y: 400000
+            },
             data: [
               {
                 x: 'Jacob',
@@ -296,6 +299,7 @@
           });
 
           function drawBarGraph(isHorizontal) {
+
               $scope.drawBarVH({
                 colors: {
                   axes: '#222',
@@ -304,7 +308,7 @@
                   focusedBar: '#8A8FC0'
                 },
                 orientation: isHorizontal ? 'horizontal' : 'vertical',
-                infoFormat: '{x} - {y}',
+                infoFormat: '{y} - {x}',
                 labels: {
                   y: 'Number of people'
                 },
