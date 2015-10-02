@@ -110,7 +110,7 @@
         </div>
         <div class="example__javascript">
           <div class="example__title text_group__title">Javascript</div>
-          <pre class="example__text text_group__text">var isSmall;&#10;window.addEventListener(&apos;resize&apos;, function() {&#10;    if (window.innerWidth &lt; 960 !== isSmall) {&#10;        isSmall = window.innerWidth &lt; 960;&#10;        drawBarGraph(isSmall);&#10;    }&#10;});&#10;&#10;function drawBarGraph(isHorizontal) {&#10;    $scope.drawBarVH({&#10;      colors: {&#10;        axes: &apos;#222&apos;,&#10;        labels: &apos;#666&apos;,&#10;        bars: &apos;#F2CFDA&apos;,&#10;        focusedBar: &apos;#8A8FC0&apos;&#10;      },&#10;      orientation: isHorizontal ? &apos;horizontal&apos; : &apos;vertical&apos;,&#10;      infoFormat: &apos;{x} - {y}&apos;,&#10;      labels: {&#10;        y: &apos;Number of people&apos;&#10;      },&#10;      data: [&#10;        {&#10;          x: &apos;Jacob&apos;,&#10;          y: 273642&#10;        }, {&#10;          x: &apos;Michael&apos;,&#10;          y: 250370&#10;        }, {&#10;          x: &apos;Joshua&apos;,&#10;          y: 231771&#10;        }, {&#10;          x: &apos;Matthew&apos;,&#10;          y: 221411&#10;        }, {&#10;          x: &apos;Daniel&apos;,&#10;          y: 203569&#10;        }, {&#10;          x: &apos;Christopher&apos;,&#10;          y: 203154&#10;        }, {&#10;          x: &apos;Andrew&apos;,&#10;          y: 202332&#10;        }, {&#10;          x: &apos;Ethan&apos;,&#10;          y: 201689&#10;        }, {&#10;          x: &apos;Joseph&apos;,&#10;          y: 194535&#10;        }, {&#10;          x: &apos;William&apos;,&#10;          y: 194199&#10;        }, {&#10;          x: &apos;Anthony&apos;,&#10;          y: 191710&#10;        }, {&#10;          x: &apos;David&apos;,&#10;          y: 179656&#10;        },&#10;      ]&#10;    });&#10;}&#10;drawBarGraph(isSmall);</pre>
+          <pre class="example__text text_group__text">function isSmallWindow () {&#10;  return window.innerWidth &lt; 640;&#10;}&#10;&#10;var isSmall = isSmallWindow();&#10;window.addEventListener(&apos;resize&apos;, function() {&#10;    if (isSmallWindow() !== isSmall) {&#10;        isSmall = isSmallWindow();&#10;        drawBarGraph(isSmall);&#10;    }&#10;});&#10;&#10;function drawBarGraph(isHorizontal) {&#10;    $scope.drawBarVH({&#10;      colors: {&#10;        axes: &apos;#222&apos;,&#10;        labels: &apos;#666&apos;,&#10;        bars: &apos;#F2CFDA&apos;,&#10;        focusedBar: &apos;#8A8FC0&apos;&#10;      },&#10;      orientation: isHorizontal ? &apos;horizontal&apos; : &apos;vertical&apos;,&#10;      infoFormat: &apos;{y} - {x}&apos;,&#10;      labels: {&#10;        y: &apos;Number of people&apos;&#10;      },&#10;      max: {&#10;        y: 400000&#10;      },&#10;      data: [&#10;        {&#10;          x: &apos;Jacob&apos;,&#10;          y: 273642&#10;        }, {&#10;          x: &apos;Michael&apos;,&#10;          y: 250370&#10;        }, {&#10;          x: &apos;Joshua&apos;,&#10;          y: 231771&#10;        }, {&#10;          x: &apos;Matthew&apos;,&#10;          y: 221411&#10;        }, {&#10;          x: &apos;Daniel&apos;,&#10;          y: 203569&#10;        }, {&#10;          x: &apos;Christopher&apos;,&#10;          y: 203154&#10;        }, {&#10;          x: &apos;Andrew&apos;,&#10;          y: 202332&#10;        }, {&#10;          x: &apos;Ethan&apos;,&#10;          y: 201689&#10;        }, {&#10;          x: &apos;Joseph&apos;,&#10;          y: 194535&#10;        }, {&#10;          x: &apos;William&apos;,&#10;          y: 194199&#10;        }, {&#10;          x: &apos;Anthony&apos;,&#10;          y: 191710&#10;        }, {&#10;          x: &apos;David&apos;,&#10;          y: 179656&#10;        }&#10;      ]&#10;    });&#10;}&#10;drawBarGraph(isSmall);</pre>
         </div>
       </div>
       <div class="example__output">
@@ -192,9 +192,6 @@
             infoFormat: '{x} - {y}',
             labels: {
               y: 'Number of people'
-            },
-            max: {
-              y: 400000
             },
             data: [
               {
@@ -290,16 +287,19 @@
             ]
           });
 
-          var isSmall;
+          function isSmallWindow () {
+            return window.innerWidth < 640;
+          }
+
+          var isSmall = isSmallWindow();
           window.addEventListener('resize', function() {
-              if (window.innerWidth < 960 !== isSmall) {
-                  isSmall = window.innerWidth < 960;
+              if (isSmallWindow() !== isSmall) {
+                  isSmall = isSmallWindow();
                   drawBarGraph(isSmall);
               }
           });
 
           function drawBarGraph(isHorizontal) {
-
               $scope.drawBarVH({
                 colors: {
                   axes: '#222',
@@ -311,6 +311,9 @@
                 infoFormat: '{y} - {x}',
                 labels: {
                   y: 'Number of people'
+                },
+                max: {
+                  y: 400000
                 },
                 data: [
                   {
@@ -349,7 +352,7 @@
                   }, {
                     x: 'David',
                     y: 179656
-                  },
+                  }
                 ]
               });
           }

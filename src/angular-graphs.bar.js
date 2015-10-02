@@ -75,6 +75,26 @@ angular.module('picardy.graphs.bar', ['picardy.graphs.common'])
             });
       }
 
+      function getYRange () {
+        var range;
+
+        if (options.max && options.max.y) {
+          range = [0, options.max.y];
+        } else {
+          range = [0, d3.max(options.data, function (d) {
+            return d.y;
+          })];
+        }
+
+        return range;
+      }
+
+      function getXRange () {
+        return options.data.map(function (d) {
+          return d.x;
+        });
+      }
+
       function drawYAxis (done) {
         var axisLength = options.height,
             yAxis, range;
@@ -83,27 +103,12 @@ angular.module('picardy.graphs.bar', ['picardy.graphs.common'])
           axisLength -= margin.info;
           axisLength -= margin.top;
           y = d3.scale.linear().range([axisLength, 0]);
-
-          if (options.max && options.max.y) {
-              range = [0, options.max.y];
-          } else {
-              range = [0, d3.max(options.data, function (d) {
-                return d.y;
-              })];
-          }
-
+          range = getYRange();
           y.domain(range);
         } else {
           axisLength -= margin.info + margin.label + 21;
           y = d3.scale.ordinal().rangeRoundBands([0, axisLength], 0.2);
-
-          if (options.max && options.max.y) {
-              range = [0, options.max.y];
-          } else {
-              range = options.data.map(function (d) {
-                return d.x;
-              });
-          }
+          range = getXRange();
           y.domain(range);
         }
 
@@ -147,24 +152,11 @@ angular.module('picardy.graphs.bar', ['picardy.graphs.common'])
         if (isVertical()) {
           axisLength -= margin.label + margin.yAxis;
           x = d3.scale.ordinal().rangeRoundBands([0, axisLength], 0.2);
-          if (options.max && options.max.x) {
-              range = [0, options.max.x];
-          } else {
-              range = options.data.map(function (d) {
-                return d.x;
-              });
-          }
+          range = getXRange();
           x.domain(range);
         } else {
           x = d3.scale.linear().range([axisLength, 0]);
-          if (options.max && options.max.y) {
-              range = [0, options.max.y];
-          } else {
-              range = [0, d3.max(options.data, function (d) {
-                return d.y;
-              })];
-          }
-
+          range = getYRange();
           x.domain(range);
         }
 
