@@ -5,7 +5,7 @@ angular.module('picardy.graphs.line', ['picardy.graphs.common'])
 
     function render (scope, element) {
 
-      var options, d3Data, options, getColor, svg, parseDate, margin, width, height, x, y, labels, axes, lines;
+      var options, d3Data, options, getColor, svg, margin, width, height, x, y, labels, axes, lines;
 
       if (!scope.data) {
         return;
@@ -34,10 +34,10 @@ angular.module('picardy.graphs.line', ['picardy.graphs.common'])
       width = options.width - margin.left - margin.right;
       height = options.height - margin.top - margin.bottom;
 
-      parseDate = d3.time.format('%d-%b-%y').parse;
-
       angular.forEach(options.data, function (d) {
-        d.x = parseDate(d.x);
+        if (d.x > 0) {
+          d.x = new Date(d.x);
+        }
         d3Data.push(d);
       });
 
