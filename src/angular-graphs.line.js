@@ -80,7 +80,7 @@ angular.module('picardy.graphs.line', ['picardy.graphs.common'])
       }
 
       function drawLines () {
-        var path, totalLength, line;
+        var line, path, totalLength; //eslint-disable-line no-unused-vars
 
         line = d3.svg.line().
           interpolate('linear').
