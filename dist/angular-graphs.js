@@ -412,7 +412,7 @@ angular.module('picardy.graphs.line', ['picardy.graphs.common'])
       }
 
       function drawGraph () {
-          var unitLength;
+          var unitLength, yRange;
 
           if (svg) {
             svg.remove();
@@ -442,12 +442,18 @@ angular.module('picardy.graphs.line', ['picardy.graphs.common'])
           x = d3.time.scale().range([0, width - 20]);
           y = d3.scale.linear().range([height, 20]);
 
+          if (options.max && options.max.y) {
+            yRange = [0, options.max.y];
+          } else {
+            yRange = [0, d3.max(d3Data, function (d) {
+              return d.y;
+            })];
+          }
+
           x.domain(d3.extent(d3Data, function (d) {
             return d.x;
           }));
-          y.domain([0, d3.max(d3Data, function (d) {
-            return d.y;
-          })]);
+          y.domain(yRange);
 
           drawAxes();
           drawLabels(options.labels.y);
