@@ -1,7 +1,7 @@
 'use strict';
 
 angular.module('picardy.graphs.common', [])
-  .factory('common', function () {
+  .factory('common', ['$window', function ($window) {
 
     var common = {
 
@@ -22,11 +22,11 @@ angular.module('picardy.graphs.common', [])
       },
 
       initSvg: function (el, width, height) {
-        return d3.select(el)
-          .append('svg')
-          .attr({
-            'viewBox': [0, 0, width, height].join(' '),
-            'preserveAspectRatio': 'xMinYMin meet'
+        return d3.select(el).
+          append('svg').
+          attr({
+            width: width,
+            height: height
           });
       },
 
@@ -65,8 +65,13 @@ angular.module('picardy.graphs.common', [])
 
       translate: function (x, y) {
         return 'translate(' + x + (y === undefined ? '' : ',' + y) + ')';
+      },
+
+      onWindowResize: function (callback) {
+        var win = angular.element($window);
+        win.bind('resize', callback);
       }
     };
 
     return common;
-  });
+  }]);

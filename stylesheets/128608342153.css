@@ -66,8 +66,10 @@ body {
 }
 .example__output {
   flex: auto;
-  text-align: center;
-  max-width: 400px;
+  text-align: left;
+}
+.example__output > * {
+  max-width: 100%;
 }
 /*.example__title {}*/
 /*.example__text {}*/
@@ -76,8 +78,5 @@ body {
 @media (max-width: 768px) {
   .example {
     flex-direction: column;
-  }
-  .example__output svg {
-    max-width: 400px;
   }
 }

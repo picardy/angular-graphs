@@ -19,38 +19,9 @@ angular.module('picardy.graphs.bar', ['picardy.graphs.common'])
       getColor = common.colors(options.colors);
 
       common.defaults(options, {
-        delay: 500,
-        duration: 1000,
         infoFormat: '{y} · {x}',
         orientation: 'vertical'
       });
-
-      if (isVertical()) {
-        common.defaults(options, {
-          height: 300
-        });
-        if (options.width === undefined) {
-          options.width = options.height * 2;
-        }
-      } else {
-        common.defaults(options, {
-          width: 300
-        });
-        if (options.height === undefined) {
-          options.height = options.width * 2;
-        }
-      }
-
-      if (element[0].children.length > 0) {
-          element[0].children[0].remove();
-      }
-
-      svg = common.initSvg(element[0], options.width, options.height);
-
-      labels = common.newLayer(svg, 'labels');
-      bars = common.newLayer(svg, 'bars');
-      axes = common.newLayer(svg, 'axes');
-      info = common.newLayer(svg, 'info');
 
       margin = {
         top: 10,
@@ -255,8 +226,13 @@ angular.module('picardy.graphs.bar', ['picardy.graphs.common'])
       }
 
       function drawBars () {
-        var attrTransitions = {
-          transform: function (d) {
+
+        var barAttrs = {
+          'class': 'bar',
+          'fill': getColor('bars'),
+          'width': isVertical() ? x.rangeBand() : 0,
+          'height': isVertical() ? 0 : y.rangeBand(),
+          'transform': function (d) {
             return isVertical()
               ? common.translate(margin.label + margin.yAxis + 20 + x(d.x), margin.top + y(d.y) + 1)
               : common.translate(20, margin.info + margin.label + y(d.x) + 21);
@@ -264,11 +240,11 @@ angular.module('picardy.graphs.bar', ['picardy.graphs.common'])
         };
 
         if (isVertical()) {
-          attrTransitions.height = function (d) {
+          barAttrs.height = function (d) {
             return options.height - margin.top - margin.info - y(d.y);
           };
         } else {
-          attrTransitions.width = function (d) {
+          barAttrs.width = function (d) {
             return options.width - x(d.y) - 21;
           };
         }
@@ -278,36 +254,47 @@ angular.module('picardy.graphs.bar', ['picardy.graphs.common'])
           .data(options.data)
           .enter()
             .append('rect')
-            .attr({
-              'class': 'bar',
-              'fill': getColor('bars'),
-              'width': isVertical() ? x.rangeBand() : 0,
-              'height': isVertical() ? 0 : y.rangeBand(),
-              'transform': function (d) {
-                return isVertical()
-                  ? common.translate(margin.label + margin.yAxis + 20 + x(d.x), options.height - margin.info + 1)
-                  : common.translate(20, margin.info + margin.label + y(d.x) + 21);
-              }
-            })
+            .attr(barAttrs)
             .on({
               'mouseover': onMouseoverBar,
               'mouseout': onMouseoutBar
-            }).
-            transition().delay(options.delay).duration(options.duration).
-              attr(attrTransitions);
+            });
       }
 
-      svg.
-        attr({
-          width: options.width,
-          height: options.height
+      function drawGraph () {
+        var unitLength;
+
+        if (svg) {
+          svg.remove();
+        }
+
+        common.defaults(options, {
+          ratioWidth: 2,
+          ratioHeight: 1
         });
 
-      drawLabels(options.labels.y, function () {
-        drawAxes(function () {
-          drawBars();
+        options.width = element[0].getBoundingClientRect().width;
+        unitLength = options.width / options.ratioWidth;
+        options.height = options.ratioHeight * unitLength;
+
+        svg = common.initSvg(element[0], options.width, options.height);
+
+        labels = common.newLayer(svg, 'labels');
+        bars = common.newLayer(svg, 'bars');
+        axes = common.newLayer(svg, 'axes');
+        info = common.newLayer(svg, 'info');
+
+        drawLabels(options.labels.y, function () {
+          drawAxes(function () {
+            drawBars();
+          });
         });
-      });
+      }
+
+      drawGraph();
+
+      common.onWindowResize(drawGraph);
+
     }
 
     return common.define($rootScope, render);

@@ -15,24 +15,6 @@ angular.module('picardy.graphs.line', ['picardy.graphs.common'])
       getColor = common.colors(options.colors);
       d3Data = [];
 
-      common.defaults(options, {
-        height: 300,
-        delay: 500,
-        duration: 1000
-      });
-      if (options.width === undefined) {
-        options.width = options.height * 2;
-      }
-
-      svg = common.initSvg(element[0], options.width, options.height);
-
-      labels = common.newLayer(svg, 'labels');
-      lines = common.newLayer(svg, 'lines');
-      axes = common.newLayer(svg, 'axes');
-
-      margin = {top: 20, right: 20, bottom: 30, left: 50};
-      width = options.width - margin.left - margin.right;
-      height = options.height - margin.top - margin.bottom;
 
       angular.forEach(options.data, function (d) {
         if (d.x > 0) {
@@ -40,16 +22,6 @@ angular.module('picardy.graphs.line', ['picardy.graphs.common'])
         }
         d3Data.push(d);
       });
-
-      x = d3.time.scale().range([0, width - 20]);
-      y = d3.scale.linear().range([height, 20]);
-
-      x.domain(d3.extent(d3Data, function (d) {
-        return d.x;
-      }));
-      y.domain([0, d3.max(d3Data, function (d) {
-        return d.y;
-      })]);
 
 
       function drawAxes () {
@@ -107,7 +79,7 @@ angular.module('picardy.graphs.line', ['picardy.graphs.common'])
             text(yLabel);
       }
 
-      function drawLines (delay, duration) {
+      function drawLines () {
         var path, totalLength, line;
 
         line = d3.svg.line().
@@ -129,17 +101,6 @@ angular.module('picardy.graphs.line', ['picardy.graphs.common'])
 
         totalLength = path.node().getTotalLength();
 
-        path.
-          attr({
-            'stroke-dasharray': totalLength + ' ' + totalLength,
-            'stroke-dashoffset': totalLength
-          }).
-          transition().
-            duration(duration).
-            delay(delay).
-            ease('linear').
-            attr('stroke-dashoffset', 0);
-
         lines.selectAll('.line').
           style({
             'fill': 'none',
@@ -148,15 +109,50 @@ angular.module('picardy.graphs.line', ['picardy.graphs.common'])
           });
       }
 
-      svg.
-        attr({
-          'width': width + margin.left + margin.right,
-          'height': height + margin.top + margin.bottom
-        });
+      function drawGraph () {
+          var unitLength;
 
-      drawAxes();
-      drawLabels(options.labels.y);
-      drawLines(options.delay, options.duration);
+          if (svg) {
+            svg.remove();
+          }
+
+          common.defaults(options, {
+            ratioWidth: 2,
+            ratioHeight: 1
+          });
+
+          options.width = element[0].getBoundingClientRect().width;
+          unitLength = options.width / options.ratioWidth;
+          options.height = options.ratioHeight * unitLength;
+
+          svg = common.initSvg(element[0], options.width, options.height);
+
+          labels = common.newLayer(svg, 'labels');
+          lines = common.newLayer(svg, 'lines');
+          axes = common.newLayer(svg, 'axes');
+
+          margin = {top: 20, right: 20, bottom: 30, left: 50};
+          width = options.width - margin.left - margin.right;
+          height = options.height - margin.top - margin.bottom;
+
+          x = d3.time.scale().range([0, width - 20]);
+          y = d3.scale.linear().range([height, 20]);
+
+          x.domain(d3.extent(d3Data, function (d) {
+            return d.x;
+          }));
+          y.domain([0, d3.max(d3Data, function (d) {
+            return d.y;
+          })]);
+
+          drawAxes();
+          drawLabels(options.labels.y);
+          drawLines();
+      }
+
+      drawGraph();
+
+      common.onWindowResize(drawGraph);
 
     }
 
