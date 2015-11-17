@@ -332,7 +332,7 @@ angular.module('picardy.graphs.line', ['picardy.graphs.common'])
         /* X AXIS */
         xAxis = d3.svg.axis().
           scale(x).
-          ticks(d3.time.days, options.dateStep).
+          ticks(d3.time.daysTotal, options.dateStep).
           tickFormat(d3.time.format(options.dateFormat)).
           orient('bottom');
 
@@ -655,6 +655,29 @@ angular.module('picardy.graphs.pie', ['picardy.graphs.common'])
 
 angular.module('picardy.graphs.common', [])
   .factory('common', ['$window', function ($window) {
+
+    function d3_time_range(floor, step, number) {
+      return function(t0, t1, dt) {
+        var time = floor(t0), times = [];
+        if (time < t0) step(time);
+        if (dt > 1) {
+          while (time < t1) {
+            var date = new Date(+time);
+            if (!(number(date) % dt)) times.push(date);
+            step(time);
+          }
+        } else {
+          while (time < t1) times.push(new Date(+time)), step(time);
+        }
+        return times;
+      };
+    }
+
+    d3.time.daysTotal = d3_time_range(d3.time.day, function(date) {
+      date.setDate(date.getDate() + 1);
+    }, function(date) {
+      return ~~(date/86400000);
+    });
 
     var common = {
 
