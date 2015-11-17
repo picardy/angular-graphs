@@ -19,7 +19,9 @@ angular.module('picardy.graphs.bar', ['picardy.graphs.common'])
       getColor = common.colors(options.colors);
 
       common.defaults(options, {
-        infoFormat: '{y} · {x}',
+        infoFormat: function(value) {
+          return value.x + ' · ' + value.y;
+        },
         orientation: 'vertical'
       });
 
@@ -172,9 +174,7 @@ angular.module('picardy.graphs.bar', ['picardy.graphs.common'])
       }
 
       function getFormattedInfo (input) {
-        return options.infoFormat.
-          replace('{x}', input.x).
-          replace('{y}', input.y);
+        return options.infoFormat(input);
       }
 
       function toggleBarFocus (bar, isFocused) {
