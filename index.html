@@ -62,7 +62,7 @@
         </div>
         <div class="example__javascript">
           <div class="example__title text_group__title">Javascript</div>
-          <pre class="example__text text_group__text">$scope.drawLine({&#10;  colors: {&#10;    axes: &apos;#222&apos;,&#10;    labels: &apos;#666&apos;,&#10;    lines: &apos;#F2CFDA&apos;&#10;  },&#10;  labels: {&#10;    y: &apos;Completion (%)&apos;&#10;  },&#10;  data: [&#10;    {&#10;      x: 1381640400000,&#10;      y: 10&#10;    }, {&#10;      x: 1381986000000,&#10;      y: 30&#10;    }, {&#10;      x: 1382158800000,&#10;      y: 23&#10;    }, {&#10;      x: 1383368400000,&#10;      y: 42&#10;    }&#10;  ]&#10;});</pre>
+          <pre class="example__text text_group__text">$scope.drawLine({&#10;  colors: {&#10;    axes: &apos;#222&apos;,&#10;    labels: &apos;#666&apos;,&#10;    lines: &apos;#F2CFDA&apos;&#10;  },&#10;  labels: {&#10;    y: &apos;Completion (%)&apos;&#10;  },&#10;  max: {&#10;    y: 100&#10;  },&#10;  data: [&#10;    {&#10;      x: 1381640400000,&#10;      y: 10&#10;    }, {&#10;      x: 1381986000000,&#10;      y: 30&#10;    }, {&#10;      x: 1382158800000,&#10;      y: 23&#10;    }, {&#10;      x: 1383368400000,&#10;      y: 42&#10;    }&#10;  ]&#10;});</pre>
         </div>
       </div>
       <div class="example__output">
@@ -147,6 +147,9 @@
             },
             labels: {
               y: 'Completion (%)'
+            },
+            max: {
+              y: 100
             },
             data: [
               {
