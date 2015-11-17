@@ -30,7 +30,7 @@ angular.module('picardy.graphs.line', ['picardy.graphs.common'])
         /* X AXIS */
         xAxis = d3.svg.axis().
           scale(x).
-          ticks(d3.time.days, options.dateStep).
+          ticks(d3.time.daysTotal, options.dateStep).
           tickFormat(d3.time.format(options.dateFormat)).
           orient('bottom');
 
