@@ -382,7 +382,7 @@ angular.module('picardy.graphs.line', ['picardy.graphs.common'])
       }
 
       function drawLines () {
-        var line, path, totalLength; //eslint-disable-line no-unused-vars
+        var line, path, totalLength, filteredData, xLimit; //eslint-disable-line no-unused-vars
 
         line = d3.svg.line().
           interpolate('linear').
@@ -393,8 +393,20 @@ angular.module('picardy.graphs.line', ['picardy.graphs.common'])
             return y(d.y);
           });
 
+        if (options.limit.x) {
+          filteredData = [];
+          xLimit = new Date(options.limit.x);
+          d3Data.forEach(function(d) {
+            if (d.x <= xLimit) {
+              filteredData.push(d);
+            }
+          });
+        } else {
+          filteredData = d3Data;
+        }
+
         path = lines.append('path').
-          datum(d3Data).
+          datum(filteredData).
           attr({
             'transform': common.translate(margin.left, 0),
             'class': 'line',

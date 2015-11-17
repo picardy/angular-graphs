@@ -1,7 +1,7 @@
 {
   "name": "angular-graphs",
   "description": "Angular directive for displaying charts implemented with D3",
-  "version": "0.6.7",
+  "version": "0.6.8",
   "main": [
     "dist/angular-graphs.js"
   ],
