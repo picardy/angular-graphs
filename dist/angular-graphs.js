@@ -673,6 +673,7 @@ angular.module('picardy.graphs.common', [])
       },
 
       initSvg: function (el, width, height) {
+        el.innerHTML = '';
         return d3.select(el).
           append('svg').
           attr({
